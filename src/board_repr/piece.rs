@@ -1,11 +1,12 @@
 use strum_macros::{AsRefStr, Display, EnumIter, EnumString};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Color {
     White,
     Black,
 }
 
+#[repr(u8)]
 #[derive(Debug, Display, EnumString, AsRefStr, PartialEq, Eq, EnumIter)]
 pub enum Piece {
     #[strum(serialize = "P", to_string = "♙")]
@@ -33,4 +34,18 @@ pub enum Piece {
     BlackKnight,
     #[strum(serialize = "r", to_string = "♜")]
     BlackRook,
+}
+
+impl Piece {
+    pub fn value(self) -> u8 {
+        self as u8
+    }
+
+    pub fn color(self) -> Color {
+        if self.value() > 5 {
+            return Color::Black;
+        }
+
+        Color::White
+    }
 }

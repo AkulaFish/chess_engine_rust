@@ -36,17 +36,20 @@ impl Fen {
             }
 
             let piece = Piece::from_str(&s.to_string()).expect("Invalid piece value");
-            board.push_str(&format!("  {}", piece.to_string()));
+            board.push_str(&format!("  {}", piece));
         }
 
         println!("{}", board);
     }
 
+    /// This method converts FEN notation to the GameState struct used later by the engine
+    /// Notice that this function does not support update version of spec
+    /// (new version skips the en-passant parameter if it's "-")
     pub fn to_game_state(fen: &str) -> GameState {
         let parts = fen.split(" ");
         let mut active_color: Color = Color::White;
         let mut castle_settings = CastleAvailability::default();
-        let mut en_passant_target = String::from("-");
+        let mut en_passant_target: Option<Square> = None;
         let mut halfmove_clock = 0;
         let mut fullmove_number: u8 = 1u8;
         let mut bitboards: BitBoardMap = BitBoardMap::default();
@@ -54,29 +57,31 @@ impl Fen {
         for (i, part) in parts.enumerate() {
             match i {
                 0 => {
-                    let mut square_counter = 1; // 0 == A1, 1 == B2 ...
+                    let mut square_counter = 0usize; // 0 == A1, 1 == B1 ...
                     for rank in part.split('/') {
                         for piece in rank.chars() {
                             if piece.is_digit(10) {
-                                square_counter += piece.to_digit(10).unwrap();
+                                square_counter += piece.to_digit(10).unwrap() as usize;
+                                continue;
                             }
 
-                            let board_piece = Piece::from_str(&piece.to_string())
-                                .expect("Unknown piece value in FEN configuration");
-                            let square = Square::get_nth(square_counter as usize);
+                            let board_piece = Piece::from_str(&piece.to_string()).expect(&format!(
+                                "Unknown piece value in FEN configuration: {}",
+                                piece
+                            ));
+                            let square = Square::get_nth(square_counter);
                             let piece_bitboard = square.get_bitboard();
-                            let piece_index = board_piece as usize;
-                            bitboards[piece_index] = bitboards[piece_index] & piece_bitboard;
+                            bitboards[board_piece.value() as usize] |= piece_bitboard;
+
+                            square_counter += 1;
                         }
                     }
                 }
-                1 => {
-                    if part == "w" {
-                        active_color = Color::White;
-                    } else {
-                        active_color = Color::Black;
-                    }
-                }
+                1 => match part {
+                    "w" => active_color = Color::White,
+                    "b" => active_color = Color::Black,
+                    _ => panic!("Undefined color in FEN notation"),
+                },
                 2 => {
                     for c in part.chars() {
                         match c {
@@ -89,7 +94,14 @@ impl Fen {
                     }
                 }
                 3 => {
-                    en_passant_target = String::from(part);
+                    if part == "-" {
+                        continue;
+                    }
+
+                    en_passant_target = Some(
+                        Square::from_str(&part.to_uppercase())
+                            .expect("Unknown en passant target square in Fen notation"),
+                    );
                 }
                 4 => {
                     let clock: u8 = part.parse().expect("Clock value must be positive integer");
@@ -101,7 +113,7 @@ impl Fen {
                         .expect("Fullmove number must be positive integer");
                     fullmove_number = number;
                 }
-                _ => panic!("test"),
+                _ => panic!("Unknown FEN configuration parameter"),
             }
         }
 

@@ -1,5 +1,6 @@
 use super::board::BitBoard;
 use super::piece::Color;
+use super::square::Square;
 
 #[derive(Debug, Default)]
 pub struct CastleAvailability {
@@ -15,7 +16,7 @@ pub struct GameState {
     pub bitboards: [BitBoard; 12],
     pub active_color: Color,
     pub castle_settings: CastleAvailability,
-    pub en_passant_target: String,
+    pub en_passant_target: Option<Square>,
     pub halfmove_clock: u8,
     pub fullmove_number: u8,
 }

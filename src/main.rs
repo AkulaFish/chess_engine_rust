@@ -1,9 +1,22 @@
 pub mod board_repr;
+pub mod move_generation;
 
-use board_repr::fen::Fen;
+use std::u64;
 
-const START_FEN: &str = "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 1";
+use board_repr::{board::BitBoard, fen::Fen, game_state, piece::Color, square::Square};
+use move_generation::tables::get_pawn_attack_mask;
+
+const START_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 fn main() {
-    Fen::draw_fen(START_FEN);
+    let mut bb = BitBoard::default();
+
+    for rank in 0..8 {
+        for file in 0..6 {
+            let square = Square::get_nth(rank * 8 + file);
+            bb.set_bit_value(square);
+        }
+    }
+
+    bb.debug();
 }
