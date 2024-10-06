@@ -64,8 +64,7 @@ const NOT_GH_FILE: u64 = 0x3f3f3f3f3f3f3f3f;
 
 pub fn generate_pawn_attack_masks() -> [[BitBoard; 64]; 2] {
     // TODO: This might be slow, so I want to consider other options later
-    let mut pawn_tables: [[BitBoard; 64]; 2] =
-        [arr![BitBoard::default(); 64], arr![BitBoard::default(); 64]];
+    let mut pawn_tables = [arr![BitBoard::default(); 64], arr![BitBoard::default(); 64]];
 
     Square::iter().for_each(|s| {
         pawn_tables[Color::White as usize][s.index() as usize] =
@@ -79,10 +78,8 @@ pub fn generate_pawn_attack_masks() -> [[BitBoard; 64]; 2] {
 }
 
 pub fn get_pawn_attack_mask(color: Color, square: Square) -> BitBoard {
-    let mut bitboard = BitBoard::default();
+    let bitboard = square.get_bitboard();
     let mut attack = BitBoard::default();
-
-    bitboard.set_bit_value(square);
 
     if color == Color::White {
         //If on the left edge of the board - do not add pawn diagonal left attack square
@@ -105,6 +102,91 @@ pub fn get_pawn_attack_mask(color: Color, square: Square) -> BitBoard {
             attack |= bitboard << 7;
         }
     }
+
+    attack
+}
+
+//////////////////////////////////
+//    GENERATE KNIGHT TABLES    //
+//////////////////////////////////
+
+pub fn generate_knight_attack_masks() -> [BitBoard; 64] {
+    let mut knight_tables = arr![BitBoard::default(); 64];
+
+    for square in Square::iter() {
+        knight_tables[square.index() as usize] = get_knight_attack_mask(square);
+    }
+
+    knight_tables
+}
+
+pub fn get_knight_attack_mask(square: Square) -> BitBoard {
+    let bitboard = square.get_bitboard();
+    let mut attack = BitBoard::default();
+
+    if !(bitboard & NOT_A_FILE).empty() {
+        attack |= bitboard >> 17;
+        attack |= bitboard << 15;
+    }
+
+    if !(bitboard & NOT_H_FILE).empty() {
+        attack |= bitboard >> 15;
+        attack |= bitboard << 17;
+    }
+
+    if !(bitboard & NOT_AB_FILE).empty() {
+        attack |= bitboard >> 10;
+        attack |= bitboard << 6;
+    }
+
+    if !(bitboard & NOT_GH_FILE).empty() {
+        attack |= bitboard >> 6;
+        attack |= bitboard << 10;
+    }
+
+    attack
+}
+
+////////////////////////////////
+//    GENERATE KNIG TABLES    //
+////////////////////////////////
+
+pub fn generate_king_attack_masks() -> [BitBoard; 64] {
+    let mut king_attacks = arr![BitBoard::default(); 64];
+
+    for s in Square::iter() {
+        king_attacks[s.index() as usize] = get_king_attack_mask(s);
+    }
+
+    king_attacks
+}
+
+pub fn get_king_attack_mask(square: Square) -> BitBoard {
+    let bitboard = square.get_bitboard();
+    let mut attack = BitBoard::default();
+
+    if !(bitboard & NOT_A_FILE).empty() {
+        // left attack
+        attack |= bitboard >> 1;
+        // top left attack
+        attack |= bitboard >> 9;
+        // bottom left attack
+        attack |= bitboard << 7;
+    }
+
+    if !(bitboard & NOT_H_FILE).empty() {
+        // right attack
+        attack |= bitboard << 1;
+        // top right attack
+        attack |= bitboard >> 7;
+        // bottom right attack;
+        attack |= bitboard << 9;
+    }
+
+    // top attack
+    attack |= bitboard >> 8;
+    // bottom attack
+    attack |= bitboard << 8;
 
     attack
 }
