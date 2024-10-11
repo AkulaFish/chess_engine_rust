@@ -22,6 +22,14 @@ impl Square {
         *self as u8
     }
 
+    pub fn rank(&self) -> u8 {
+        self.index() / 8
+    }
+
+    pub fn file(&self) -> u8 {
+        self.index() % 8
+    }
+
     pub fn get_nth(n: usize) -> Self {
         // TODO: This is inefficient
         if n == 0 {
@@ -33,7 +41,7 @@ impl Square {
         iter.next().expect("N should be between 0 and 63")
     }
 
-    pub fn get_bitboard(self) -> BitBoard {
-        BitBoard::from(1u64 << (self as usize))
+    pub fn get_bitboard(&self) -> BitBoard {
+        BitBoard::from(1u64 << (self.index()))
     }
 }

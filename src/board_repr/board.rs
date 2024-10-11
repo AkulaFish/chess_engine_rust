@@ -109,6 +109,12 @@ impl BitOrAssign for BitBoard {
     }
 }
 
+impl BitOrAssign<u64> for BitBoard {
+    fn bitor_assign(&mut self, rhs: u64) {
+        self.0 = self.0 | rhs;
+    }
+}
+
 impl Shl<usize> for BitBoard {
     type Output = BitBoard;
 

@@ -190,3 +190,57 @@ pub fn get_king_attack_mask(square: Square) -> BitBoard {
 
     attack
 }
+
+//////////////////////////////////
+//    GENERATE BISHOP TABLES    //
+//////////////////////////////////
+
+pub fn get_bishop_relevant_occupancy_mask(square: Square) -> BitBoard {
+    // TODO: this is pbly rook attacks
+    let mut occupancy = BitBoard::default();
+
+    let tr = square.rank();
+    let tf = square.file();
+
+    let mut r = tr + 1;
+    loop {
+        if r <= 6 {
+            break;
+        }
+
+        occupancy |= 1u64 << (r * 8 + tf);
+        r += 1;
+    }
+
+    let mut f = tf + 1;
+    loop {
+        if r <= 6 {
+            break;
+        }
+
+        occupancy |= 1u64 << (tr * 8 + f);
+        f += 1;
+    }
+
+    let mut r = tr - 1;
+    loop {
+        if r >= 1 {
+            break;
+        }
+
+        occupancy |= 1u64 << (r * 8 + tf);
+        r -= 1;
+    }
+
+    let mut f = tf - 1;
+    loop {
+        if f >= 1 {
+            break;
+        }
+
+        occupancy |= 1u64 << (tr * 8 + f);
+        f -= 1;
+    }
+
+    occupancy
+}

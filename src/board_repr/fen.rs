@@ -57,7 +57,7 @@ impl Fen {
         for (i, part) in parts.enumerate() {
             match i {
                 0 => {
-                    let mut square_counter = 0usize; // 0 == A1, 1 == B1 ...
+                    let mut square_counter = 0usize;
                     for rank in part.split('/') {
                         for piece in rank.chars() {
                             if piece.is_digit(10) {
