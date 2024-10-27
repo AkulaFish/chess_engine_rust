@@ -69,7 +69,7 @@ impl Fen {
                                 "Unknown piece value in FEN configuration: {}",
                                 piece
                             ));
-                            let square = Square::get_nth(square_counter);
+                            let square = Square::get_by_index(square_counter);
                             let piece_bitboard = square.get_bitboard();
                             bitboards[board_piece.value() as usize] |= piece_bitboard;
 

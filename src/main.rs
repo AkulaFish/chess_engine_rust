@@ -8,10 +8,13 @@ use move_generation::tables::{
     get_bishop_relevant_occupancy_mask, get_king_attack_mask, get_knight_attack_mask,
     get_pawn_attack_mask,
 };
+use strum::IntoEnumIterator;
 
 const START_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 fn main() {
-    let bb = get_bishop_relevant_occupancy_mask(Square::D5);
-    bb.debug();
+    for square in Square::iter() {
+        let bb = get_bishop_relevant_occupancy_mask(square);
+        bb.debug();
+    }
 }

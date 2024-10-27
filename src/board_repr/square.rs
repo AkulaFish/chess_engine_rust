@@ -30,7 +30,11 @@ impl Square {
         self.index() % 8
     }
 
-    pub fn get_nth(n: usize) -> Self {
+    pub fn from_file_and_rank(file: u8, rank: u8) -> Self {
+        Self::get_by_index((rank * 8 + file) as usize)
+    }
+
+    pub fn get_by_index(n: usize) -> Self {
         // TODO: This is inefficient
         if n == 0 {
             return Square::A8;
@@ -38,10 +42,37 @@ impl Square {
 
         let mut iter = Square::iter().step_by(n);
         iter.next();
-        iter.next().expect("N should be between 0 and 63")
+        iter.next()
+            .expect(&format!("N should be between 0 and 63. Got: {}", n))
     }
 
     pub fn get_bitboard(&self) -> BitBoard {
         BitBoard::from(1u64 << (self.index()))
+    }
+}
+
+//////////////////
+//  Unit Tests  //
+//////////////////
+#[cfg(test)]
+mod tests {
+    use strum::IntoEnumIterator;
+
+    use super::Square;
+
+    #[test]
+    fn test_get_by_index() {
+        for square in Square::iter() {
+            let s = Square::get_by_index(square.index() as usize);
+            assert!(s == square)
+        }
+    }
+
+    #[test]
+    fn test_from_file_and_rank() {
+        for square in Square::iter() {
+            let s = Square::from_file_and_rank(square.file(), square.rank());
+            assert!(s == square)
+        }
     }
 }

@@ -198,47 +198,54 @@ pub fn get_king_attack_mask(square: Square) -> BitBoard {
 pub fn get_bishop_relevant_occupancy_mask(square: Square) -> BitBoard {
     // TODO: this is pbly rook attacks
     let mut occupancy = BitBoard::default();
-
     let tr = square.rank();
     let tf = square.file();
 
     let mut r = tr + 1;
-    loop {
-        if r <= 6 {
-            break;
-        }
-
-        occupancy |= 1u64 << (r * 8 + tf);
-        r += 1;
-    }
-
     let mut f = tf + 1;
     loop {
-        if r <= 6 {
+        if r > 6 || f > 6 {
             break;
         }
-
-        occupancy |= 1u64 << (tr * 8 + f);
+        let square_bb = Square::from_file_and_rank(f, r).get_bitboard();
+        occupancy |= square_bb;
+        r += 1;
         f += 1;
     }
 
-    let mut r = tr - 1;
+    r = tr + 1;
+    f = if tf == 0 { 0 } else { tf - 1 };
     loop {
-        if r >= 1 {
+        if r > 6 || f < 1 {
             break;
         }
-
-        occupancy |= 1u64 << (r * 8 + tf);
-        r -= 1;
+        let square_bb = Square::from_file_and_rank(f, r).get_bitboard();
+        occupancy |= square_bb;
+        r += 1;
+        f -= 1;
     }
 
-    let mut f = tf - 1;
+    r = if tr == 0 { 0 } else { tr - 1 };
+    f = tf + 1;
     loop {
-        if f >= 1 {
+        if r < 1 || f > 6 {
             break;
         }
+        let square_bb = Square::from_file_and_rank(f, r).get_bitboard();
+        occupancy |= square_bb;
+        r -= 1;
+        f += 1;
+    }
 
-        occupancy |= 1u64 << (tr * 8 + f);
+    r = if tr == 0 { 0 } else { tr - 1 };
+    f = if tf == 0 { 0 } else { tf - 1 };
+    loop {
+        if r < 1 || f < 1 {
+            break;
+        }
+        let square_bb = Square::from_file_and_rank(f, r).get_bitboard();
+        occupancy |= square_bb;
+        r -= 1;
         f -= 1;
     }
 

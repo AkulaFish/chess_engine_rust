@@ -49,7 +49,7 @@ impl Debug for BitBoard {
         for rank in 0..8 {
             result.push_str(&format!("{}  ", 8 - rank));
             for file in 0..8 {
-                let square = Square::get_nth(rank * 8 + file);
+                let square = Square::get_by_index(rank * 8 + file);
                 result.push_str(&format!(
                     " {} ",
                     if self.get_bit_value(square) { "1" } else { "." }
