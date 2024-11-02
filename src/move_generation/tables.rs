@@ -251,3 +251,48 @@ pub fn get_bishop_relevant_occupancy_mask(square: Square) -> BitBoard {
 
     occupancy
 }
+
+//////////////////////////////////
+//    GENERATE ROOK TABLES      //
+//////////////////////////////////
+
+pub fn get_rook_relevant_occupancy_mask(square: Square) -> BitBoard {
+    // TODO: this is pbly rook attacks
+    let mut occupancy = BitBoard::default();
+    let tr = square.rank();
+    let tf = square.file();
+
+    let mut r = 1;
+    loop {
+        if r < 1 || r > 6 {
+            break;
+        }
+
+        if r == tr {
+            r += 1;
+            continue;
+        }
+
+        let square_bb = Square::from_file_and_rank(tf, r).get_bitboard();
+        occupancy |= square_bb;
+        r += 1;
+    }
+
+    let mut f = 1;
+    loop {
+        if f < 1 || f > 6 {
+            break;
+        }
+
+        if f == tf {
+            f += 1;
+            continue;
+        }
+
+        let square_bb = Square::from_file_and_rank(f, tr).get_bitboard();
+        occupancy |= square_bb;
+        f += 1;
+    }
+
+    occupancy
+}
