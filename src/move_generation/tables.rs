@@ -195,6 +195,55 @@ pub fn get_king_attack_mask(square: Square) -> BitBoard {
 //    GENERATE BISHOP TABLES    //
 //////////////////////////////////
 
+pub fn generate_bishop_attacks(square: Square, blocker: BitBoard) -> BitBoard {
+    let mut occupancy = BitBoard::default();
+    let tr = square.rank();
+    let tf = square.file();
+
+    let top_ranks = (0..tr).rev();
+    let bottom_ranks = (tr + 1)..8;
+    let right_files = (tf + 1)..8;
+    let left_files = (0..tf).rev();
+
+    for (r, f) in top_ranks.clone().zip(right_files.clone()) {
+        let square_bb = Square::from_file_and_rank(f, r).get_bitboard();
+        occupancy |= square_bb;
+
+        if !(square_bb & blocker).empty() {
+            break;
+        }
+    }
+
+    for (r, f) in top_ranks.zip(left_files.clone()) {
+        let square_bb = Square::from_file_and_rank(f, r).get_bitboard();
+        occupancy |= square_bb;
+
+        if !(square_bb & blocker).empty() {
+            break;
+        }
+    }
+
+    for (r, f) in bottom_ranks.clone().zip(right_files) {
+        let square_bb = Square::from_file_and_rank(f, r).get_bitboard();
+        occupancy |= square_bb;
+
+        if !(square_bb & blocker).empty() {
+            break;
+        }
+    }
+
+    for (r, f) in bottom_ranks.zip(left_files) {
+        let square_bb = Square::from_file_and_rank(f, r).get_bitboard();
+        occupancy |= square_bb;
+
+        if !(square_bb & blocker).empty() {
+            break;
+        }
+    }
+
+    occupancy
+}
+
 pub fn get_bishop_relevant_occupancy_mask(square: Square) -> BitBoard {
     // TODO: this is pbly rook attacks
     let mut occupancy = BitBoard::default();
@@ -256,6 +305,50 @@ pub fn get_bishop_relevant_occupancy_mask(square: Square) -> BitBoard {
 //    GENERATE ROOK TABLES      //
 //////////////////////////////////
 
+pub fn generate_rook_attacks(square: Square, blocker: BitBoard) -> BitBoard {
+    let mut occupancy = BitBoard::default();
+    let tr = square.rank();
+    let tf = square.file();
+
+    for r in (0..tr).rev() {
+        let square_bb = Square::from_file_and_rank(tf, r).get_bitboard();
+        occupancy |= square_bb;
+
+        if !(square_bb & blocker).empty() {
+            break;
+        }
+    }
+
+    for r in (tr + 1)..8 {
+        let square_bb = Square::from_file_and_rank(tf, r).get_bitboard();
+        occupancy |= square_bb;
+
+        if !(square_bb & blocker).empty() {
+            break;
+        }
+    }
+
+    for f in (0..tf).rev() {
+        let square_bb = Square::from_file_and_rank(f, tr).get_bitboard();
+        occupancy |= square_bb;
+
+        if !(square_bb & blocker).empty() {
+            break;
+        }
+    }
+
+    for f in (tf + 1)..8 {
+        let square_bb = Square::from_file_and_rank(f, tr).get_bitboard();
+        occupancy |= square_bb;
+
+        if !(square_bb & blocker).empty() {
+            break;
+        }
+    }
+
+    occupancy
+}
+
 pub fn get_rook_relevant_occupancy_mask(square: Square) -> BitBoard {
     // TODO: this is pbly rook attacks
     let mut occupancy = BitBoard::default();
@@ -264,7 +357,7 @@ pub fn get_rook_relevant_occupancy_mask(square: Square) -> BitBoard {
 
     let mut r = 1;
     loop {
-        if r < 1 || r > 6 {
+        if r > 6 {
             break;
         }
 
@@ -280,7 +373,7 @@ pub fn get_rook_relevant_occupancy_mask(square: Square) -> BitBoard {
 
     let mut f = 1;
     loop {
-        if f < 1 || f > 6 {
+        if f > 6 {
             break;
         }
 
