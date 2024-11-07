@@ -389,3 +389,24 @@ pub fn get_rook_relevant_occupancy_mask(square: Square) -> BitBoard {
 
     occupancy
 }
+
+//////////////////////////////////////
+//    GENERATE BLOCKERS TABLES      //
+//////////////////////////////////////
+
+pub fn generate_blocker_table(index: u32, attack_mask: BitBoard) -> BitBoard {
+    let mut occupancy = BitBoard::default();
+    let mut mask = attack_mask.clone();
+    let bits_count = attack_mask.count_ones();
+
+    for count in 0..bits_count {
+        let square = Square::get_by_index(mask.lsb_index() as usize);
+        mask.pop_bit_value(square);
+
+        if (index & (1 << count)) != 0 {
+            occupancy |= square.get_bitboard();
+        }
+    }
+
+    occupancy
+}

@@ -1,5 +1,5 @@
 use std::fmt::{Debug, Display};
-use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, Shl, Shr};
+use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, Not, Shl, Shr};
 
 use super::square::Square;
 
@@ -15,12 +15,24 @@ impl BitBoard {
         self.0 == 0
     }
 
+    pub fn count_ones(&self) -> u32 {
+        self.0.count_ones()
+    }
+
+    pub fn lsb_index(&self) -> u32 {
+        self.0.trailing_zeros()
+    }
+
     pub fn value(self) -> u64 {
         self.0
     }
 
     pub fn set_bit_value(&mut self, square: Square) {
         self.0 |= 1u64 << square.index();
+    }
+
+    pub fn pop_bit_value(&mut self, square: Square) {
+        self.0 &= !(1u64 << square.index());
     }
 
     pub fn get_bit_value(&self, square: Square) -> bool {
@@ -128,6 +140,14 @@ impl Shr<usize> for BitBoard {
 
     fn shr(self, rhs: usize) -> Self::Output {
         Self(self.0 >> rhs)
+    }
+}
+
+impl Not for BitBoard {
+    type Output = Self;
+
+    fn not(self) -> Self::Output {
+        Self(!self.0)
     }
 }
 
