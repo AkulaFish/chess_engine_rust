@@ -1,6 +1,7 @@
 use crate::board_repr::{board::BitBoard, piece::Color, square::Square};
-use arr_macro::arr;
 use strum::IntoEnumIterator;
+
+use super::magics::{BISHOP_MAGICS, BISHOP_TABLE_SIZE, ROOK_MAGICS, ROOK_TABLE_SIZE};
 
 //////////////////
 //    CONSTS    //
@@ -64,7 +65,7 @@ const NOT_GH_FILE: u64 = 0x3f3f3f3f3f3f3f3f;
 
 pub fn generate_pawn_attack_masks() -> [[BitBoard; 64]; 2] {
     // TODO: This might be slow, so I want to consider other options later
-    let mut pawn_tables = [arr![BitBoard::default(); 64], arr![BitBoard::default(); 64]];
+    let mut pawn_tables = [[BitBoard::default(); 64], [BitBoard::default(); 64]];
 
     Square::iter().for_each(|s| {
         pawn_tables[Color::White as usize][s.index() as usize] =
@@ -111,7 +112,7 @@ pub fn get_pawn_attack_mask(color: Color, square: Square) -> BitBoard {
 //////////////////////////////////
 
 pub fn generate_knight_attack_masks() -> [BitBoard; 64] {
-    let mut knight_tables = arr![BitBoard::default(); 64];
+    let mut knight_tables = [BitBoard::default(); 64];
 
     for square in Square::iter() {
         knight_tables[square.index() as usize] = get_knight_attack_mask(square);
@@ -152,7 +153,7 @@ pub fn get_knight_attack_mask(square: Square) -> BitBoard {
 ////////////////////////////////
 
 pub fn generate_king_attack_masks() -> [BitBoard; 64] {
-    let mut king_attacks = arr![BitBoard::default(); 64];
+    let mut king_attacks = [BitBoard::default(); 64];
 
     for s in Square::iter() {
         king_attacks[s.index() as usize] = get_king_attack_mask(s);
@@ -195,7 +196,49 @@ pub fn get_king_attack_mask(square: Square) -> BitBoard {
 //    GENERATE BISHOP TABLES    //
 //////////////////////////////////
 
-pub fn generate_bishop_attacks(square: Square, blocker: BitBoard) -> BitBoard {
+pub fn generate_bishop_attack_masks() -> [[BitBoard; BISHOP_TABLE_SIZE]; 64] {
+    let mut offset = 0;
+    let mut result = [[BitBoard::default(); BISHOP_TABLE_SIZE]; 64];
+    for square in Square::iter() {
+        let mask = get_bishop_relevant_occupancy_mask(square);
+        let bits = mask.count_ones();
+        let permutations = 2u64.pow(bits);
+        let shift = 64 - bits;
+        let magic_number = BISHOP_MAGICS[square.index() as usize];
+
+        let table = &mut result[square.index() as usize];
+
+        let blockers = generate_blockers(mask);
+        let attacks = generate_bishop_attacks(square, &blockers);
+
+        for i in 0..permutations {
+            let blocker_board = blockers[i as usize];
+            let block = blocker_board & mask;
+            let index = ((block.value().wrapping_mul(magic_number) >> shift) + offset) as usize;
+
+            if table[index] == BitBoard::default() {
+                table[index] = attacks[i as usize]
+            } else {
+                panic!("Error while initializing magic piece attacks.")
+            }
+        }
+        offset += permutations;
+    }
+
+    result
+}
+pub fn generate_bishop_attacks(square: Square, blockers: &[BitBoard]) -> Vec<BitBoard> {
+    let mut attacks: Vec<BitBoard> = Vec::new();
+
+    for blocker in blockers {
+        let attack = generate_bishop_attack(square, *blocker);
+        attacks.push(attack);
+    }
+
+    attacks
+}
+
+pub fn generate_bishop_attack(square: Square, blocker: BitBoard) -> BitBoard {
     let mut occupancy = BitBoard::default();
     let tr = square.rank();
     let tf = square.file();
@@ -305,7 +348,49 @@ pub fn get_bishop_relevant_occupancy_mask(square: Square) -> BitBoard {
 //    GENERATE ROOK TABLES      //
 //////////////////////////////////
 
-pub fn generate_rook_attacks(square: Square, blocker: BitBoard) -> BitBoard {
+pub fn generate_rook_attack_masks() -> [[BitBoard; ROOK_TABLE_SIZE]; 64] {
+    let mut offset = 0;
+    let mut result = [[BitBoard::default(); ROOK_TABLE_SIZE]; 64];
+    for square in Square::iter() {
+        let mask = get_rook_relevant_occupancy_mask(square);
+        let bits = mask.count_ones();
+        let permutations = 2u64.pow(bits);
+        let shift = 64 - bits;
+        let magic_number = ROOK_MAGICS[square.index() as usize];
+
+        let table = &mut result[square.index() as usize];
+
+        let blockers = generate_blockers(mask);
+        let attacks = generate_rook_attacks(square, &blockers);
+
+        for i in 0..permutations {
+            let blocker_board = blockers[i as usize];
+            let block = blocker_board & mask;
+            let index = ((block.value().wrapping_mul(magic_number) >> shift) + offset) as usize;
+
+            if table[index] == BitBoard::default() {
+                table[index] = attacks[i as usize]
+            } else {
+                panic!("Error while initializing magic piece attacks.")
+            }
+        }
+        offset += permutations;
+    }
+
+    result
+}
+pub fn generate_rook_attacks(square: Square, blockers: &[BitBoard]) -> Vec<BitBoard> {
+    let mut attacks: Vec<BitBoard> = Vec::new();
+
+    for blocker in blockers {
+        let attack = generate_rook_attack(square, *blocker);
+        attacks.push(attack);
+    }
+
+    attacks
+}
+
+pub fn generate_rook_attack(square: Square, blocker: BitBoard) -> BitBoard {
     let mut occupancy = BitBoard::default();
     let tr = square.rank();
     let tf = square.file();
@@ -394,19 +479,20 @@ pub fn get_rook_relevant_occupancy_mask(square: Square) -> BitBoard {
 //    GENERATE BLOCKERS TABLES      //
 //////////////////////////////////////
 
-pub fn generate_blocker_table(index: u32, attack_mask: BitBoard) -> BitBoard {
-    let mut occupancy = BitBoard::default();
-    let mut mask = attack_mask.clone();
-    let bits_count = attack_mask.count_ones();
+pub fn generate_blockers(mask: BitBoard) -> Vec<BitBoard> {
+    let d: BitBoard = mask;
+    let mut bb_blocker_boards = Vec::new();
+    let mut n: BitBoard = BitBoard::default();
 
-    for count in 0..bits_count {
-        let square = Square::get_by_index(mask.lsb_index() as usize);
-        mask.pop_bit_value(square);
-
-        if (index & (1 << count)) != 0 {
-            occupancy |= square.get_bitboard();
+    // Carry-Rippler
+    // https://www.chessprogramming.org/Traversing_Subsets_of_a_Set
+    loop {
+        bb_blocker_boards.push(n);
+        n = n.wrapping_sub(d) & d;
+        if n.empty() {
+            break;
         }
     }
 
-    occupancy
+    bb_blocker_boards
 }

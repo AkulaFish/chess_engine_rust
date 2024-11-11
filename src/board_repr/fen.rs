@@ -27,7 +27,7 @@ impl Fen {
                 continue;
             }
 
-            if s.is_digit(10) {
+            if s.is_ascii_digit() {
                 let d = s.to_digit(10).unwrap();
                 for _ in 0..d {
                     board.push_str("  □");
@@ -60,15 +60,13 @@ impl Fen {
                     let mut square_counter = 0usize;
                     for rank in part.split('/') {
                         for piece in rank.chars() {
-                            if piece.is_digit(10) {
+                            if piece.is_ascii_digit() {
                                 square_counter += piece.to_digit(10).unwrap() as usize;
                                 continue;
                             }
 
-                            let board_piece = Piece::from_str(&piece.to_string()).expect(&format!(
-                                "Unknown piece value in FEN configuration: {}",
-                                piece
-                            ));
+                            let board_piece = Piece::from_str(&piece.to_string()).unwrap_or_else(|_| panic!("Unknown piece value in FEN configuration: {}",
+                                piece));
                             let square = Square::get_by_index(square_counter);
                             let piece_bitboard = square.get_bitboard();
                             bitboards[board_piece.value() as usize] |= piece_bitboard;

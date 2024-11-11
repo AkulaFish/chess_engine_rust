@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-arr_macro = "0.2.1"
+clippy = "0.0.302"
+rand = "0.8.5"
+rand_chacha = "0.3.1"
 strum = "0.26.3"
 strum_macros = "0.26.4"

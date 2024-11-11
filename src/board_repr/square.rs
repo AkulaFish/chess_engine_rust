@@ -1,11 +1,11 @@
 use strum::IntoEnumIterator;
-use strum_macros::{EnumIter, EnumString};
+use strum_macros::{Display, EnumIter, EnumString};
 
 use super::board::BitBoard;
 
 #[rustfmt::skip]
 #[repr(u8)]
-#[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter, EnumString)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter, EnumString, Display)]
 pub enum Square {
     A8, B8, C8, D8, E8, F8, G8, H8,
     A7, B7, C7, D7, E7, F7, G7, H7,
@@ -43,7 +43,7 @@ impl Square {
         let mut iter = Square::iter().step_by(n);
         iter.next();
         iter.next()
-            .expect(&format!("N should be between 0 and 63. Got: {}", n))
+            .unwrap_or_else(|| panic!("N should be between 0 and 63. Got: {}", n))
     }
 
     pub fn get_bitboard(&self) -> BitBoard {

@@ -46,6 +46,18 @@ impl BitBoard {
     pub fn debug(&self) {
         println!("{:?}", self);
     }
+
+    pub fn wrapping_add(&self, rhs: BitBoard) -> Self {
+        Self::from(self.0.wrapping_add(rhs.0))
+    }
+
+    pub fn wrapping_sub(&self, rhs: BitBoard) -> Self {
+        Self::from(self.0.wrapping_sub(rhs.0))
+    }
+
+    pub fn wrapping_mul(&self, rhs: BitBoard) -> Self {
+        Self::from(self.0.wrapping_mul(rhs.0))
+    }
 }
 
 impl Display for BitBoard {
@@ -67,7 +79,7 @@ impl Debug for BitBoard {
                     if self.get_bit_value(square) { "1" } else { "." }
                 ));
             }
-            result.push_str("\n")
+            result.push('\n')
         }
         result.push_str("    a  b  c  d  e  f  g  h\n\n");
         result.push_str(&format!("    Decimal: {}\n", self.0));
@@ -157,8 +169,6 @@ impl Not for BitBoard {
 
 #[cfg(test)]
 mod tests {
-    use std::u64;
-
     use strum::IntoEnumIterator;
 
     use super::*;
@@ -169,7 +179,7 @@ mod tests {
 
         for square in Square::iter() {
             let bit = bb.get_bit_value(square);
-            assert_eq!(bit, false);
+            assert!(!bit);
         }
     }
 
@@ -179,7 +189,7 @@ mod tests {
 
         for square in Square::iter() {
             let bit = bb.get_bit_value(square);
-            assert_eq!(bit, true);
+            assert!(bit);
         }
     }
 
