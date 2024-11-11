@@ -196,17 +196,15 @@ pub fn get_king_attack_mask(square: Square) -> BitBoard {
 //    GENERATE BISHOP TABLES    //
 //////////////////////////////////
 
-pub fn generate_bishop_attack_masks() -> [[BitBoard; BISHOP_TABLE_SIZE]; 64] {
+pub fn generate_bishop_attack_masks() -> [BitBoard; BISHOP_TABLE_SIZE] {
     let mut offset = 0;
-    let mut result = [[BitBoard::default(); BISHOP_TABLE_SIZE]; 64];
+    let mut table = [BitBoard::default(); BISHOP_TABLE_SIZE];
     for square in Square::iter() {
         let mask = get_bishop_relevant_occupancy_mask(square);
         let bits = mask.count_ones();
         let permutations = 2u64.pow(bits);
         let shift = 64 - bits;
         let magic_number = BISHOP_MAGICS[square.index() as usize];
-
-        let table = &mut result[square.index() as usize];
 
         let blockers = generate_blockers(mask);
         let attacks = generate_bishop_attacks(square, &blockers);
@@ -225,7 +223,7 @@ pub fn generate_bishop_attack_masks() -> [[BitBoard; BISHOP_TABLE_SIZE]; 64] {
         offset += permutations;
     }
 
-    result
+    table
 }
 pub fn generate_bishop_attacks(square: Square, blockers: &[BitBoard]) -> Vec<BitBoard> {
     let mut attacks: Vec<BitBoard> = Vec::new();
@@ -348,17 +346,15 @@ pub fn get_bishop_relevant_occupancy_mask(square: Square) -> BitBoard {
 //    GENERATE ROOK TABLES      //
 //////////////////////////////////
 
-pub fn generate_rook_attack_masks() -> [[BitBoard; ROOK_TABLE_SIZE]; 64] {
+pub fn generate_rook_attack_masks() -> [BitBoard; ROOK_TABLE_SIZE] {
     let mut offset = 0;
-    let mut result = [[BitBoard::default(); ROOK_TABLE_SIZE]; 64];
+    let mut table = [BitBoard::default(); ROOK_TABLE_SIZE];
     for square in Square::iter() {
         let mask = get_rook_relevant_occupancy_mask(square);
         let bits = mask.count_ones();
         let permutations = 2u64.pow(bits);
         let shift = 64 - bits;
         let magic_number = ROOK_MAGICS[square.index() as usize];
-
-        let table = &mut result[square.index() as usize];
 
         let blockers = generate_blockers(mask);
         let attacks = generate_rook_attacks(square, &blockers);
@@ -377,7 +373,7 @@ pub fn generate_rook_attack_masks() -> [[BitBoard; ROOK_TABLE_SIZE]; 64] {
         offset += permutations;
     }
 
-    result
+    table
 }
 pub fn generate_rook_attacks(square: Square, blockers: &[BitBoard]) -> Vec<BitBoard> {
     let mut attacks: Vec<BitBoard> = Vec::new();

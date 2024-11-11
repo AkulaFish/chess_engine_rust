@@ -9,11 +9,11 @@ use super::{
 };
 
 pub struct MoveGenerator {
-    king: [BitBoard; 64],
-    pawn: [[BitBoard; 64]; 2],
-    rook: [[BitBoard; ROOK_TABLE_SIZE]; 64],
-    bishop: [[BitBoard; BISHOP_TABLE_SIZE]; 64],
-    knight: [BitBoard; 64],
+    pub king: [BitBoard; 64],
+    pub pawn: [[BitBoard; 64]; 2],
+    pub rook: [BitBoard; ROOK_TABLE_SIZE],
+    pub bishop: [BitBoard; BISHOP_TABLE_SIZE],
+    pub knight: [BitBoard; 64],
 }
 
 impl MoveGenerator {
