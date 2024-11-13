@@ -2,8 +2,8 @@ use crate::board_repr::piece::Piece;
 use std::str::FromStr;
 
 use super::{
-    board::BitBoard,
-    game_state::{CastleAvailability, GameState},
+    bit_board::BitBoard,
+    board::{CastleAvailability, GameState},
     piece::Color,
     square::Square,
 };
@@ -65,8 +65,10 @@ impl Fen {
                                 continue;
                             }
 
-                            let board_piece = Piece::from_str(&piece.to_string()).unwrap_or_else(|_| panic!("Unknown piece value in FEN configuration: {}",
-                                piece));
+                            let board_piece =
+                                Piece::from_str(&piece.to_string()).unwrap_or_else(|_| {
+                                    panic!("Unknown piece value in FEN configuration: {}", piece)
+                                });
                             let square = Square::get_by_index(square_counter);
                             let piece_bitboard = square.get_bitboard();
                             bitboards[board_piece.value() as usize] |= piece_bitboard;

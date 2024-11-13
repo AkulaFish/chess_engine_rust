@@ -1,7 +1,7 @@
 use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumIter, EnumString};
 
-use super::board::BitBoard;
+use super::bit_board::BitBoard;
 
 #[rustfmt::skip]
 #[repr(u8)]

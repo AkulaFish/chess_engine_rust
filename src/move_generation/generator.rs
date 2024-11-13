@@ -1,4 +1,4 @@
-use crate::board_repr::{board::BitBoard, piece::Color, square::Square};
+use crate::board_repr::{bit_board::BitBoard, piece::Color, square::Square};
 
 use super::{
     magics::{BISHOP_MAGICS, BISHOP_TABLE_SIZE, ROOK_MAGICS, ROOK_TABLE_SIZE},

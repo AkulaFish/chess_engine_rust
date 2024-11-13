@@ -4,7 +4,7 @@ use strum::IntoEnumIterator;
 use strum_macros::Display;
 
 use crate::{
-    board_repr::{board::BitBoard, square::Square},
+    board_repr::{bit_board::BitBoard, square::Square},
     move_generation::tables::{
         generate_bishop_attacks, generate_rook_attacks, get_bishop_relevant_occupancy_mask,
     },
