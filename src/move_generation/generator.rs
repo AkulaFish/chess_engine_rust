@@ -1,11 +1,8 @@
-use crate::{board_repr::board::BitBoard, move_generation::tables::generate_rook_attack_masks};
+use crate::board_repr::{board::BitBoard, piece::Color, square::Square};
 
 use super::{
-    magics::{BISHOP_TABLE_SIZE, ROOK_TABLE_SIZE},
-    tables::{
-        generate_bishop_attack_masks, generate_king_attack_masks, generate_knight_attack_masks,
-        generate_pawn_attack_masks,
-    },
+    magics::{BISHOP_MAGICS, BISHOP_TABLE_SIZE, ROOK_MAGICS, ROOK_TABLE_SIZE},
+    tables::get_bishop_relevant_occupancy_mask,
 };
 
 pub struct MoveGenerator {
@@ -17,19 +14,40 @@ pub struct MoveGenerator {
 }
 
 impl MoveGenerator {
-    pub fn new() -> Self {
-        let king = generate_king_attack_masks();
-        let pawn = generate_pawn_attack_masks();
-        let knight = generate_knight_attack_masks();
-        let bishop = generate_bishop_attack_masks();
-        let rook = generate_rook_attack_masks();
+    pub fn get_bishop_attack(&self, square: Square, blocker: BitBoard) -> BitBoard {
+        let mask = get_bishop_relevant_occupancy_mask(square);
+        let magic = BISHOP_MAGICS[square.index() as usize];
 
-        Self {
-            king,
-            pawn,
-            knight,
-            bishop,
-            rook,
-        }
+        let block = blocker & mask;
+        let index = block.value().wrapping_rem_euclid(magic) >> (64 - mask.count_ones());
+        self.bishop[index as usize]
+    }
+
+    pub fn get_rook_attack(&self, square: Square, blocker: BitBoard) -> BitBoard {
+        let mask = get_bishop_relevant_occupancy_mask(square);
+        let magic = ROOK_MAGICS[square.index() as usize];
+
+        let block = blocker & mask;
+        let index = block.value().wrapping_rem_euclid(magic) >> (64 - mask.count_ones());
+        self.rook[index as usize]
+    }
+
+    pub fn get_queen_attack(&self, square: Square, blocker: BitBoard) -> BitBoard {
+        let bishop_attack = self.get_bishop_attack(square, blocker);
+        let rook_attack = self.get_rook_attack(square, blocker);
+
+        rook_attack | bishop_attack
+    }
+
+    pub fn get_kind_attack(&self, square: Square) -> BitBoard {
+        self.king[square.index() as usize]
+    }
+
+    pub fn get_knight_attack(&self, square: Square) -> BitBoard {
+        self.knight[square.index() as usize]
+    }
+
+    pub fn get_pawn_attack(&self, square: Square, color: Color) -> BitBoard {
+        self.pawn[color as usize][square.index() as usize]
     }
 }
