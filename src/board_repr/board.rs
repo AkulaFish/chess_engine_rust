@@ -12,7 +12,7 @@ pub struct CastleAvailability {
 }
 
 #[derive(Debug)]
-pub struct GameState {
+pub struct Board {
     pub bitboards: [BitBoard; 12],
     pub active_color: Color,
     pub castle_settings: CastleAvailability,

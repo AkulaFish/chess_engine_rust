@@ -3,7 +3,7 @@ use std::str::FromStr;
 
 use super::{
     bit_board::BitBoard,
-    board::{CastleAvailability, GameState},
+    board::{Board, CastleAvailability},
     piece::Color,
     square::Square,
 };
@@ -45,7 +45,7 @@ impl Fen {
     /// This method converts FEN notation to the GameState struct used later by the engine
     /// Notice that this function does not support update version of spec
     /// (new version skips the en-passant parameter if it's "-")
-    pub fn to_game_state(fen: &str) -> GameState {
+    pub fn to_game_state(fen: &str) -> Board {
         let parts = fen.split(" ");
         let mut active_color: Color = Color::White;
         let mut castle_settings = CastleAvailability::default();
@@ -117,7 +117,7 @@ impl Fen {
             }
         }
 
-        GameState {
+        Board {
             bitboards,
             active_color,
             castle_settings,
