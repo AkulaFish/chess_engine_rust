@@ -1,9 +1,6 @@
 use crate::board_repr::{bit_board::BitBoard, piece::Color, square::Square};
 
-use super::{
-    magics::{BISHOP_MAGICS, BISHOP_TABLE_SIZE, ROOK_MAGICS, ROOK_TABLE_SIZE},
-    tables::get_bishop_relevant_occupancy_mask,
-};
+use super::magics::{Magic, BISHOP_TABLE_SIZE, ROOK_TABLE_SIZE};
 
 pub struct MoveGenerator {
     pub king: [BitBoard; 64],
@@ -11,25 +8,21 @@ pub struct MoveGenerator {
     pub rook: [BitBoard; ROOK_TABLE_SIZE],
     pub bishop: [BitBoard; BISHOP_TABLE_SIZE],
     pub knight: [BitBoard; 64],
+    pub rook_magics: [Magic; 64],
+    pub bishop_magics: [Magic; 64],
 }
 
 impl MoveGenerator {
     pub fn get_bishop_attack(&self, square: Square, blocker: BitBoard) -> BitBoard {
-        let mask = get_bishop_relevant_occupancy_mask(square);
-        let magic = BISHOP_MAGICS[square.index() as usize];
-
-        let block = blocker & mask;
-        let index = block.value().wrapping_rem_euclid(magic) >> (64 - mask.count_ones());
-        self.bishop[index as usize]
+        let magic = self.bishop_magics[square as usize];
+        let index = magic.index(blocker);
+        self.bishop[index]
     }
 
     pub fn get_rook_attack(&self, square: Square, blocker: BitBoard) -> BitBoard {
-        let mask = get_bishop_relevant_occupancy_mask(square);
-        let magic = ROOK_MAGICS[square.index() as usize];
-
-        let block = blocker & mask;
-        let index = block.value().wrapping_rem_euclid(magic) >> (64 - mask.count_ones());
-        self.rook[index as usize]
+        let magic = self.rook_magics[square as usize];
+        let index = magic.index(blocker);
+        self.rook[index]
     }
 
     pub fn get_queen_attack(&self, square: Square, blocker: BitBoard) -> BitBoard {
@@ -39,7 +32,7 @@ impl MoveGenerator {
         rook_attack | bishop_attack
     }
 
-    pub fn get_kind_attack(&self, square: Square) -> BitBoard {
+    pub fn get_king_attack(&self, square: Square) -> BitBoard {
         self.king[square.index() as usize]
     }
 

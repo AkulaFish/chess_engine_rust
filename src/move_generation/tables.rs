@@ -1,7 +1,7 @@
 use crate::board_repr::{bit_board::BitBoard, piece::Color, square::Square};
 use strum::IntoEnumIterator;
 
-use super::magics::{BISHOP_MAGICS, BISHOP_TABLE_SIZE, ROOK_MAGICS, ROOK_TABLE_SIZE};
+use super::magics::{Magic, BISHOP_MAGICS, BISHOP_TABLE_SIZE, ROOK_MAGICS, ROOK_TABLE_SIZE};
 
 //////////////////
 //    CONSTS    //
@@ -96,11 +96,11 @@ pub fn get_pawn_attack_mask(color: Color, square: Square) -> BitBoard {
     if color == Color::Black {
         //If on the left edge of the board - do not add pawn diagonal left attack square
         if !(bitboard & NOT_A_FILE).empty() {
-            attack |= bitboard << 9;
+            attack |= bitboard << 7;
         }
         //If on the right edge of the board - do not add pawn diagonal right attack square
         if !(bitboard & NOT_H_FILE).empty() {
-            attack |= bitboard << 7;
+            attack |= bitboard << 9;
         }
     }
 
@@ -196,26 +196,33 @@ pub fn get_king_attack_mask(square: Square) -> BitBoard {
 //    GENERATE BISHOP TABLES    //
 //////////////////////////////////
 
-pub fn generate_bishop_attack_masks() -> [BitBoard; BISHOP_TABLE_SIZE] {
+pub fn generate_bishop_attack_masks() -> ([BitBoard; BISHOP_TABLE_SIZE], [Magic; 64]) {
     let mut offset = 0;
     let mut table = [BitBoard::default(); BISHOP_TABLE_SIZE];
+    let mut magics_table = [Magic::default(); 64];
     for square in Square::iter() {
         let mask = get_bishop_relevant_occupancy_mask(square);
         let bits = mask.count_ones();
         let permutations = 2u64.pow(bits);
-        let shift = 64 - bits;
+        let shift = 64u8 - bits as u8;
         let magic_number = BISHOP_MAGICS[square.index() as usize];
+        let magic = Magic {
+            mask,
+            offset,
+            shift,
+            magic_number,
+        };
 
         let blockers = generate_blockers(mask);
         let attacks = generate_bishop_attacks(square, &blockers);
 
         for i in 0..permutations {
             let blocker_board = blockers[i as usize];
-            let block = blocker_board & mask;
-            let index = ((block.value().wrapping_mul(magic_number) >> shift) + offset) as usize;
+            let index = magic.index(blocker_board);
 
             if table[index] == BitBoard::default() {
-                table[index] = attacks[i as usize]
+                table[index] = attacks[i as usize];
+                magics_table[square as usize] = magic;
             } else {
                 panic!("Error while initializing magic piece attacks.")
             }
@@ -223,8 +230,9 @@ pub fn generate_bishop_attack_masks() -> [BitBoard; BISHOP_TABLE_SIZE] {
         offset += permutations;
     }
 
-    table
+    (table, magics_table)
 }
+
 pub fn generate_bishop_attacks(square: Square, blockers: &[BitBoard]) -> Vec<BitBoard> {
     let mut attacks: Vec<BitBoard> = Vec::new();
 
@@ -346,26 +354,33 @@ pub fn get_bishop_relevant_occupancy_mask(square: Square) -> BitBoard {
 //    GENERATE ROOK TABLES      //
 //////////////////////////////////
 
-pub fn generate_rook_attack_masks() -> [BitBoard; ROOK_TABLE_SIZE] {
-    let mut offset = 0;
+pub fn generate_rook_attack_masks() -> ([BitBoard; ROOK_TABLE_SIZE], [Magic; 64]) {
+    let mut offset = 0u64;
     let mut table = [BitBoard::default(); ROOK_TABLE_SIZE];
+    let mut magics_table = [Magic::default(); 64];
     for square in Square::iter() {
         let mask = get_rook_relevant_occupancy_mask(square);
         let bits = mask.count_ones();
         let permutations = 2u64.pow(bits);
-        let shift = 64 - bits;
+        let shift = 64u8 - bits as u8;
         let magic_number = ROOK_MAGICS[square.index() as usize];
+        let magic = Magic {
+            mask,
+            offset,
+            shift,
+            magic_number,
+        };
 
         let blockers = generate_blockers(mask);
         let attacks = generate_rook_attacks(square, &blockers);
 
         for i in 0..permutations {
             let blocker_board = blockers[i as usize];
-            let block = blocker_board & mask;
-            let index = ((block.value().wrapping_mul(magic_number) >> shift) + offset) as usize;
+            let index = magic.index(blocker_board);
 
             if table[index] == BitBoard::default() {
-                table[index] = attacks[i as usize]
+                table[index] = attacks[i as usize];
+                magics_table[square as usize] = magic;
             } else {
                 panic!("Error while initializing magic piece attacks.")
             }
@@ -373,8 +388,9 @@ pub fn generate_rook_attack_masks() -> [BitBoard; ROOK_TABLE_SIZE] {
         offset += permutations;
     }
 
-    table
+    (table, magics_table)
 }
+
 pub fn generate_rook_attacks(square: Square, blockers: &[BitBoard]) -> Vec<BitBoard> {
     let mut attacks: Vec<BitBoard> = Vec::new();
 

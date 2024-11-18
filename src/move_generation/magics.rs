@@ -12,6 +12,24 @@ use crate::{
 
 use super::tables::{generate_blockers, get_rook_relevant_occupancy_mask};
 
+#[derive(Debug, Default, Clone, Copy)]
+pub struct Magic {
+    pub magic_number: u64,
+    pub mask: BitBoard,
+    pub offset: u64,
+    pub shift: u8,
+}
+
+impl Magic {
+    pub fn index(&self, blocker: BitBoard) -> usize {
+        // And-ing mask and blocker leaves only relevant blocker squares.
+        // E.i. for the rook on A1 it's going to leave only blockers on A file and 1 rank.
+        let occ = self.mask & blocker;
+
+        ((occ.value().wrapping_mul(self.magic_number) >> self.shift) + self.offset) as usize
+    }
+}
+
 #[derive(Debug, Display)]
 pub enum MagicPiece {
     ROOK,

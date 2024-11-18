@@ -42,10 +42,10 @@ impl Fen {
         println!("{}", board);
     }
 
-    /// This method converts FEN notation to the GameState struct used later by the engine
+    /// This method converts FEN notation to the Board struct used later by the engine
     /// Notice that this function does not support update version of spec
     /// (new version skips the en-passant parameter if it's "-")
-    pub fn to_game_state(fen: &str) -> Board {
+    pub fn to_board(fen: &str) -> Board {
         let parts = fen.split(" ");
         let mut active_color: Color = Color::White;
         let mut castle_settings = CastleAvailability::default();
@@ -89,7 +89,7 @@ impl Fen {
                             'k' => castle_settings.can_black_castle_king = true,
                             'Q' => castle_settings.can_white_castle_queen = true,
                             'q' => castle_settings.can_black_castle_queen = true,
-                            _ => panic!("Unknown castle setting"),
+                            _ => {}
                         }
                     }
                 }

@@ -17,8 +17,8 @@ impl MoveGenerator {
         let king = generate_king_attack_masks();
         let pawn = generate_pawn_attack_masks();
         let knight = generate_knight_attack_masks();
-        let bishop = generate_bishop_attack_masks();
-        let rook = generate_rook_attack_masks();
+        let (bishop, bishop_magics) = generate_bishop_attack_masks();
+        let (rook, rook_magics) = generate_rook_attack_masks();
 
         Self {
             king,
@@ -26,6 +26,8 @@ impl MoveGenerator {
             knight,
             bishop,
             rook,
+            bishop_magics,
+            rook_magics,
         }
     }
 }
