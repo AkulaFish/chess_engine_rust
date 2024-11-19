@@ -68,11 +68,9 @@ pub fn generate_pawn_attack_masks() -> [[BitBoard; 64]; 2] {
     let mut pawn_tables = [[BitBoard::default(); 64], [BitBoard::default(); 64]];
 
     Square::iter().for_each(|s| {
-        pawn_tables[Color::White as usize][s.index() as usize] =
-            get_pawn_attack_mask(Color::White, s);
+        pawn_tables[Color::White as usize][s as usize] = get_pawn_attack_mask(Color::White, s);
 
-        pawn_tables[Color::Black as usize][s.index() as usize] =
-            get_pawn_attack_mask(Color::Black, s);
+        pawn_tables[Color::Black as usize][s as usize] = get_pawn_attack_mask(Color::Black, s);
     });
 
     pawn_tables
@@ -115,7 +113,7 @@ pub fn generate_knight_attack_masks() -> [BitBoard; 64] {
     let mut knight_tables = [BitBoard::default(); 64];
 
     for square in Square::iter() {
-        knight_tables[square.index() as usize] = get_knight_attack_mask(square);
+        knight_tables[square as usize] = get_knight_attack_mask(square);
     }
 
     knight_tables
@@ -156,7 +154,7 @@ pub fn generate_king_attack_masks() -> [BitBoard; 64] {
     let mut king_attacks = [BitBoard::default(); 64];
 
     for s in Square::iter() {
-        king_attacks[s.index() as usize] = get_king_attack_mask(s);
+        king_attacks[s as usize] = get_king_attack_mask(s);
     }
 
     king_attacks
@@ -205,7 +203,7 @@ pub fn generate_bishop_attack_masks() -> ([BitBoard; BISHOP_TABLE_SIZE], [Magic;
         let bits = mask.count_ones();
         let permutations = 2u64.pow(bits);
         let shift = 64u8 - bits as u8;
-        let magic_number = BISHOP_MAGICS[square.index() as usize];
+        let magic_number = BISHOP_MAGICS[square as usize];
         let magic = Magic {
             mask,
             offset,
@@ -363,7 +361,7 @@ pub fn generate_rook_attack_masks() -> ([BitBoard; ROOK_TABLE_SIZE], [Magic; 64]
         let bits = mask.count_ones();
         let permutations = 2u64.pow(bits);
         let shift = 64u8 - bits as u8;
-        let magic_number = ROOK_MAGICS[square.index() as usize];
+        let magic_number = ROOK_MAGICS[square as usize];
         let magic = Magic {
             mask,
             offset,

@@ -33,11 +33,11 @@ impl MoveGenerator {
     }
 
     pub fn get_king_attack(&self, square: Square) -> BitBoard {
-        self.king[square.index() as usize]
+        self.king[square as usize]
     }
 
     pub fn get_knight_attack(&self, square: Square) -> BitBoard {
-        self.knight[square.index() as usize]
+        self.knight[square as usize]
     }
 
     pub fn get_pawn_attack(&self, square: Square, color: Color) -> BitBoard {

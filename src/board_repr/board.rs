@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::fmt::{Debug, Display};
 
 use strum::IntoEnumIterator;
 
@@ -17,7 +17,6 @@ pub struct CastleAvailability {
     pub can_black_castle_king: bool,
 }
 
-#[derive(Debug)]
 pub struct Board {
     pub bitboards: [BitBoard; 12],
     pub active_color: Color,
@@ -32,12 +31,44 @@ impl Board {
         println!("{}", self);
     }
 
+    pub fn debug(&self) {
+        println!("{:?}", self);
+    }
+
     pub fn set_piece(&mut self, square: Square, piece: Piece) {
         self.bitboards[piece as usize] |= square.get_bitboard();
     }
 }
 
 impl Display for Board {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut result = String::new();
+
+        for rank in 0..8 {
+            result.push_str(&format!("{}  ", 8 - rank));
+            for file in 0..8 {
+                let square = Square::get_by_index(rank * 8 + file);
+                let mut match_found = false;
+                for piece in Piece::iter() {
+                    if !(square.get_bitboard() & self.bitboards[piece as usize]).empty() {
+                        result.push_str(&format!(" {} ", piece));
+                        match_found = true;
+                        break;
+                    }
+                }
+                if !match_found {
+                    result.push_str(" . ");
+                }
+            }
+            result.push('\n')
+        }
+        result.push_str("    a  b  c  d  e  f  g  h\n\n");
+
+        write!(f, "{}", result)
+    }
+}
+
+impl Debug for Board {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut result = String::new();
 
