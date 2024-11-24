@@ -1,4 +1,5 @@
-use strum_macros::{AsRefStr, Display, EnumIter, EnumString};
+
+use strum_macros::{AsRefStr, Display, EnumIter, EnumString, FromRepr};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Display)]
 pub enum Color {
@@ -18,7 +19,7 @@ impl Color {
 }
 
 #[repr(u8)]
-#[derive(Debug, Display, EnumString, AsRefStr, PartialEq, Eq, EnumIter, Clone, Copy)]
+#[derive(Debug, Display, EnumString, AsRefStr, PartialEq, Eq, EnumIter, Clone, Copy, FromRepr)]
 pub enum Piece {
     #[strum(serialize = "P", to_string = "♙")]
     WhitePawn,
@@ -45,9 +46,15 @@ pub enum Piece {
     BlackKnight,
     #[strum(serialize = "r", to_string = "♜")]
     BlackRook,
+
+    None,
 }
 
 impl Piece {
+    pub fn get_by_index(n: u8) -> Self {
+        Self::from_repr(n).unwrap_or_else(|| panic!("Piece index out of range."))
+    }
+
     pub fn value(&self) -> u8 {
         *self as u8
     }
@@ -75,6 +82,8 @@ impl Piece {
             Self::BlackBishop => Self::WhiteBishop,
             Self::BlackKnight => Self::WhiteKnight,
             Self::BlackRook => Self::WhiteRook,
+
+            Self::None => panic!("Can not get color of None piece."),
         }
     }
 

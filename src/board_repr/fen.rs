@@ -57,11 +57,11 @@ impl Fen {
         for (i, part) in parts.enumerate() {
             match i {
                 0 => {
-                    let mut square_counter = 0usize;
+                    let mut square_counter = 0u8;
                     for rank in part.split('/') {
                         for piece in rank.chars() {
                             if piece.is_ascii_digit() {
-                                square_counter += piece.to_digit(10).unwrap() as usize;
+                                square_counter += piece.to_digit(10).unwrap() as u8;
                                 continue;
                             }
 
@@ -117,13 +117,13 @@ impl Fen {
             }
         }
 
-        Board {
+        Board::new(
             bitboards,
             active_color,
             castle_settings,
             en_passant_target,
             halfmove_clock,
             fullmove_number,
-        }
+        )
     }
 }

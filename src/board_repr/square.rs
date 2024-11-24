@@ -1,11 +1,10 @@
-use strum::IntoEnumIterator;
-use strum_macros::{Display, EnumIter, EnumString};
+use strum_macros::{Display, EnumIter, EnumString, FromRepr};
 
 use super::bit_board::BitBoard;
 
 #[rustfmt::skip]
 #[repr(u8)]
-#[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter, EnumString, Display)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter, EnumString, Display, FromRepr)]
 pub enum Square {
     A8, B8, C8, D8, E8, F8, G8, H8,
     A7, B7, C7, D7, E7, F7, G7, H7,
@@ -31,23 +30,23 @@ impl Square {
     }
 
     pub fn from_file_and_rank(file: u8, rank: u8) -> Self {
-        Self::get_by_index((rank * 8 + file) as usize)
+        Self::get_by_index(rank * 8 + file)
     }
 
-    pub fn get_by_index(n: usize) -> Self {
-        // TODO: This is inefficient
-        if n == 0 {
-            return Square::A8;
-        }
-
-        let mut iter = Square::iter().step_by(n);
-        iter.next();
-        iter.next()
-            .unwrap_or_else(|| panic!("N should be between 0 and 63. Got: {}", n))
+    pub fn get_by_index(n: u8) -> Self {
+        Self::from_repr(n).unwrap_or_else(|| panic!("Square index out of range."))
     }
 
     pub fn get_bitboard(&self) -> BitBoard {
         BitBoard::from(1u64 << (self.index()))
+    }
+
+    pub fn add_rank(&self, increment: i8) -> Self {
+        Self::from_file_and_rank(self.file(), (self.rank() as i8 + increment) as u8)
+    }
+
+    pub fn add_file(&self, increment: i8) -> Self {
+        Self::from_file_and_rank(self.file() + increment as u8, self.rank())
     }
 }
 
@@ -63,7 +62,7 @@ mod tests {
     #[test]
     fn test_get_by_index() {
         for square in Square::iter() {
-            let s = Square::get_by_index(square.index() as usize);
+            let s = Square::get_by_index(square.index());
             assert!(s == square)
         }
     }

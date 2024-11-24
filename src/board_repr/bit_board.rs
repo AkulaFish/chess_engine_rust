@@ -19,8 +19,8 @@ impl BitBoard {
         self.0.count_ones()
     }
 
-    pub fn lsb_index(&self) -> u32 {
-        self.0.trailing_zeros()
+    pub fn lsb_bit_square(&self) -> Square {
+        Square::get_by_index(self.0.trailing_zeros() as u8)
     }
 
     pub fn value(self) -> u64 {
@@ -57,6 +57,11 @@ impl BitBoard {
 
     pub fn wrapping_mul(&self, rhs: BitBoard) -> Self {
         Self::from(self.0.wrapping_mul(rhs.0))
+    }
+
+    pub fn rotate_left(&self, rotations: u32) -> Self {
+        let result = self.0.rotate_left(rotations);
+        Self::from(result)
     }
 }
 

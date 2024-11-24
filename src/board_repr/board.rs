@@ -24,9 +24,46 @@ pub struct Board {
     pub en_passant_target: Option<Square>,
     pub halfmove_clock: u8,
     pub fullmove_number: u8,
+    pub piece_by_square: [Piece; 64],
 }
 
 impl Board {
+    pub fn new(
+        bitboards: [BitBoard; 12],
+        active_color: Color,
+        castle_settings: CastleAvailability,
+        en_passant_target: Option<Square>,
+        halfmove_clock: u8,
+        fullmove_number: u8,
+    ) -> Self {
+        let mut board = Self {
+            bitboards,
+            active_color,
+            castle_settings,
+            en_passant_target,
+            halfmove_clock,
+            fullmove_number,
+            piece_by_square: [Piece::None; 64],
+        };
+        board.init_piece_by_square();
+        board
+    }
+
+    pub fn init_piece_by_square(&mut self) {
+        let mut result = [Piece::None; 64];
+        for square in Square::iter() {
+            for piece in Piece::iter().filter(|p| p != &Piece::None) {
+                let occ = self.bitboards[piece as usize];
+                let square_bb = square.get_bitboard();
+                if !(occ & square_bb).empty() {
+                    result[square as usize] = piece;
+                    break;
+                }
+            }
+        }
+        self.piece_by_square = result;
+    }
+
     pub fn display(&self) {
         println!("{}", self);
     }
@@ -49,7 +86,7 @@ impl Display for Board {
             for file in 0..8 {
                 let square = Square::get_by_index(rank * 8 + file);
                 let mut match_found = false;
-                for piece in Piece::iter() {
+                for piece in Piece::iter().filter(|p| p != &Piece::None) {
                     if !(square.get_bitboard() & self.bitboards[piece as usize]).empty() {
                         result.push_str(&format!(" {} ", piece));
                         match_found = true;
@@ -77,7 +114,7 @@ impl Debug for Board {
             for file in 0..8 {
                 let square = Square::get_by_index(rank * 8 + file);
                 let mut match_found = false;
-                for piece in Piece::iter() {
+                for piece in Piece::iter().filter(|p| p != &Piece::None) {
                     if !(square.get_bitboard() & self.bitboards[piece as usize]).empty() {
                         result.push_str(&format!(" {} ", piece));
                         match_found = true;
@@ -98,6 +135,7 @@ impl Debug for Board {
 
 impl Board {
     pub fn get_occupancies(&self, color: Color) -> BitBoard {
+        // I might want to refactor this and store occupancies on the Board struct to save calculation time
         let (start, end) = match color {
             Color::White => (0, 6),
             Color::Black => (6, 12),
@@ -144,8 +182,6 @@ impl Board {
         // Is attacked by rook
         let rook_attack = mg.get_rook_attack(square, self.get_occupancies(Color::Both));
         let rook_index = Piece::BlackRook.to_color(color) as usize;
-        rook_attack.debug();
-        self.get_occupancies(Color::Both).debug();
         if !(rook_attack & self.bitboards[rook_index]).empty() {
             return true;
         }
