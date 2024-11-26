@@ -2,6 +2,7 @@ use std::fmt::Display;
 
 use crate::board_repr::{piece::Piece, square::Square};
 
+#[derive(Clone, Copy)]
 pub struct Move {
     data: u32,
 }
@@ -19,6 +20,7 @@ BINARY REPRESENTATION                DATA               HEX REPRESENTATION
 0100 0000 0000 0000 0000 0000 0000   double push flag   0x4000000
 */
 impl Move {
+    #[allow(clippy::too_many_arguments)]
     pub fn encode_move(
         source_square: Square,
         target_square: Square,
@@ -78,20 +80,29 @@ impl Move {
     }
 }
 
+impl Default for Move {
+    fn default() -> Self {
+        Self::encode_move(
+            Square::A8,
+            Square::A8,
+            Piece::None,
+            Piece::None,
+            Piece::None,
+            false,
+            false,
+            false,
+        )
+    }
+}
+
 impl Display for Move {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "Source Square: {}\n Target Square: {}\n Piece: {}\n Captured Piece: {}\n Promoted To: {}\n Is En-passant: {}\n Is castling: {}\n Is Double-Push: {}",
-            self.source_square(),
-            self.target_square(),
-            self.piece(),
-            self.captured_piece(),
-            self.promoted_piece(),
-            self.en_passant(),
-            self.castling(),
-            self.double_push(),
-        )
+        let mut result = String::from("SOURCE_SQUARE    TARGET_SQUARE   PIECE    CAPTURED_PIECE    PROMOTED_PIECE    EN_PASSANT    CASTLING    DOUBLE_PUSH\n");
+        result.push_str(&format!( "      {}               {}         {}             {}                 {}                {}            {}            {}\n",
+            self.source_square(), self.target_square(), self.piece(), self.captured_piece(), self.promoted_piece(), self.en_passant() as u8, self.castling() as u8, self.double_push() as u8
+        ));
+
+        write!(f, "{}", result)
     }
 }
 

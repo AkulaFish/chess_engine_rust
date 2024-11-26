@@ -7,6 +7,7 @@ use crate::board_repr::{
 
 use super::{
     magics::{Magic, BISHOP_TABLE_SIZE, ROOK_TABLE_SIZE},
+    move_list::MoveList,
     moves::Move,
 };
 
@@ -54,7 +55,7 @@ impl MoveGenerator {
 }
 
 impl MoveGenerator {
-    pub fn generate_moves(&self, board: &Board, move_list: &mut Vec<Move>) {
+    pub fn generate_moves(&self, board: &Board, move_list: &mut MoveList) {
         self.generate_pawn_moves(board, move_list);
         self.generate_castling_moves(board, move_list);
         self.generate_piece_moves(
@@ -84,7 +85,7 @@ impl MoveGenerator {
         );
     }
 
-    pub fn generate_piece_moves(&self, piece: Piece, board: &Board, move_list: &mut Vec<Move>) {
+    pub fn generate_piece_moves(&self, piece: Piece, board: &Board, move_list: &mut MoveList) {
         // Pawn do not fall under general pattern so we want to fall back to generate_pawn_moves
         if piece == Piece::WhitePawn || piece == Piece::BlackPawn {
             self.generate_pawn_moves(board, move_list);
@@ -119,7 +120,7 @@ impl MoveGenerator {
         }
     }
 
-    pub fn generate_pawn_moves(&self, board: &Board, move_list: &mut Vec<Move>) {
+    pub fn generate_pawn_moves(&self, board: &Board, move_list: &mut MoveList) {
         // TODO: I don't like that ranks are reversed, fix this later.
         let next_rank = match board.active_color {
             Color::White => -1,
@@ -168,7 +169,7 @@ impl MoveGenerator {
         }
     }
 
-    pub fn generate_castling_moves(&self, board: &Board, move_list: &mut Vec<Move>) {
+    pub fn generate_castling_moves(&self, board: &Board, move_list: &mut MoveList) {
         let occupancy = board.get_occupancies(Color::Both);
         let source_square = board.bitboards[Piece::WhiteKing.to_color(board.active_color) as usize]
             .lsb_bit_square();
@@ -266,7 +267,7 @@ impl MoveGenerator {
         piece: Piece,
         source_square: Square,
         to_bitboard: BitBoard,
-        move_list: &mut Vec<Move>,
+        move_list: &mut MoveList,
     ) {
         let mut to_bb = to_bitboard;
         let is_king = piece == Piece::WhiteKing || piece == Piece::BlackKing;
@@ -316,7 +317,7 @@ impl MoveGenerator {
                         castling,
                         double_push,
                     );
-                    move_list.push(move_data);
+                    move_list.add_move(move_data);
                 }
             } else {
                 let move_data = Move::encode_move(
@@ -329,7 +330,7 @@ impl MoveGenerator {
                     castling,
                     double_push,
                 );
-                move_list.push(move_data);
+                move_list.add_move(move_data);
             }
         }
     }

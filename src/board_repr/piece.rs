@@ -1,4 +1,3 @@
-
 use strum_macros::{AsRefStr, Display, EnumIter, EnumString, FromRepr};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Display)]
@@ -47,6 +46,7 @@ pub enum Piece {
     #[strum(serialize = "r", to_string = "♜")]
     BlackRook,
 
+    #[strum(serialize = "None", to_string = "-")]
     None,
 }
 

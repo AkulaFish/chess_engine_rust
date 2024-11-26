@@ -1,5 +1,5 @@
 use board_repr::fen::Fen;
-use move_generation::{generator::MoveGenerator, moves::Move};
+use move_generation::{generator::MoveGenerator, move_list::MoveList};
 
 pub mod board_repr;
 pub mod move_generation;
@@ -16,7 +16,8 @@ fn main() {
     board.display();
 
     let mg = MoveGenerator::new();
-    let mut move_list: Vec<Move> = Vec::new();
+    let mut move_list = MoveList::new();
 
     mg.generate_moves(&board, &mut move_list);
+    move_list.display();
 }
