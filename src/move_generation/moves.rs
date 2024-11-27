@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use crate::board_repr::{piece::Piece, square::Square};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]

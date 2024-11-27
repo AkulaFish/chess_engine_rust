@@ -1,7 +1,3 @@
-use std::fmt::Display;
-
-use crate::board_repr::piece::Piece;
-
 use super::moves::Move;
 
 const MAX_LEGAL_MOVES: usize = 255;

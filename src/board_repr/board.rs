@@ -56,13 +56,13 @@ impl Board {
 
     pub fn init_occupancy(bitboards: [BitBoard; 12]) -> [BitBoard; 3] {
         let mut white_occupancy = BitBoard::default();
-        for i in 0..6 {
-            white_occupancy |= bitboards[i];
+        for bb in bitboards.iter().take(6) {
+            white_occupancy |= *bb;
         }
 
         let mut black_occupancy = BitBoard::default();
-        for i in 6..12 {
-            black_occupancy |= bitboards[i];
+        for bb in bitboards.iter().skip(6) {
+            black_occupancy |= *bb;
         }
 
         [
