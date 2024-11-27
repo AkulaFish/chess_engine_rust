@@ -1,4 +1,3 @@
-use std::fmt::{Debug, Display};
 use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, Not, Shl, Shr};
 
 use super::square::Square;
@@ -62,52 +61,6 @@ impl BitBoard {
     pub fn rotate_left(&self, rotations: u32) -> Self {
         let result = self.0.rotate_left(rotations);
         Self::from(result)
-    }
-}
-
-impl Display for BitBoard {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut result = String::new();
-
-        for rank in 0..8 {
-            result.push_str(&format!("{}  ", 8 - rank));
-            for file in 0..8 {
-                let square = Square::get_by_index(rank * 8 + file);
-                result.push_str(&format!(
-                    " {} ",
-                    if self.get_bit_value(square) { "1" } else { "." }
-                ));
-            }
-            result.push('\n')
-        }
-        result.push_str("    a  b  c  d  e  f  g  h\n\n");
-        result.push_str(&format!("    Decimal: {}\n", self.0));
-        result.push_str(&format!("    Hex: {:x}\n\n", self.0));
-
-        write!(f, "{}", result)
-    }
-}
-
-impl Debug for BitBoard {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut result = String::new();
-
-        for rank in 0..8 {
-            result.push_str(&format!("{}  ", 8 - rank));
-            for file in 0..8 {
-                let square = Square::get_by_index(rank * 8 + file);
-                result.push_str(&format!(
-                    " {} ",
-                    if self.get_bit_value(square) { "1" } else { "." }
-                ));
-            }
-            result.push('\n')
-        }
-        result.push_str("    a  b  c  d  e  f  g  h\n\n");
-        result.push_str(&format!("    Decimal: {}\n", self.0));
-        result.push_str(&format!("    Hex: {:x}\n\n", self.0));
-
-        write!(f, "{}", result)
     }
 }
 

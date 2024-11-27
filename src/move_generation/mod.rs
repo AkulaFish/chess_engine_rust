@@ -1,3 +1,4 @@
+mod displays;
 pub mod generator;
 pub mod init;
 pub mod magics;

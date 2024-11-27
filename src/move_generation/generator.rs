@@ -8,7 +8,7 @@ use crate::board_repr::{
 use super::{
     magics::{Magic, BISHOP_TABLE_SIZE, ROOK_TABLE_SIZE},
     move_list::MoveList,
-    moves::Move,
+    moves::{Move, MoveType},
 };
 
 pub struct MoveGenerator {
@@ -55,45 +55,58 @@ impl MoveGenerator {
 }
 
 impl MoveGenerator {
-    pub fn generate_moves(&self, board: &Board, move_list: &mut MoveList) {
-        self.generate_pawn_moves(board, move_list);
-        self.generate_castling_moves(board, move_list);
+    pub fn generate_moves(&self, board: &Board, move_list: &mut MoveList, move_type: MoveType) {
+        // Special case. Generate pawn moves
+        self.generate_pawn_moves(board, move_list, move_type);
+
+        // Special case. Generate castle moves
+        if move_type == MoveType::All || move_type == MoveType::Quite {
+            self.generate_castling_moves(board, move_list);
+        }
+
+        // Generate moves for other pieces
         self.generate_piece_moves(
             Piece::WhiteKing.to_color(board.active_color),
             board,
             move_list,
+            move_type,
         );
         self.generate_piece_moves(
             Piece::WhiteQueen.to_color(board.active_color),
             board,
             move_list,
+            move_type,
         );
         self.generate_piece_moves(
             Piece::WhiteRook.to_color(board.active_color),
             board,
             move_list,
+            move_type,
         );
         self.generate_piece_moves(
             Piece::WhiteBishop.to_color(board.active_color),
             board,
             move_list,
+            move_type,
         );
         self.generate_piece_moves(
             Piece::WhiteKnight.to_color(board.active_color),
             board,
             move_list,
+            move_type,
         );
     }
 
-    pub fn generate_piece_moves(&self, piece: Piece, board: &Board, move_list: &mut MoveList) {
-        // Pawn do not fall under general pattern so we want to fall back to generate_pawn_moves
-        if piece == Piece::WhitePawn || piece == Piece::BlackPawn {
-            self.generate_pawn_moves(board, move_list);
-            return;
-        }
-
+    pub fn generate_piece_moves(
+        &self,
+        piece: Piece,
+        board: &Board,
+        move_list: &mut MoveList,
+        move_type: MoveType,
+    ) {
         let occupancy = board.get_occupancies(Color::Both);
         let friendly_occupancy = board.get_occupancies(board.active_color);
+        let opponent_occupancy = board.get_occupancies(board.active_color.opposite());
 
         let mut piece_bitboard = board.bitboards[piece.to_color(board.active_color) as usize];
 
@@ -114,13 +127,24 @@ impl MoveGenerator {
                     self.get_queen_attack(source_square, occupancy)
                 }
                 _ => panic!("Can not generate moves for this piece: {}", piece),
-            } & !friendly_occupancy;
+            };
 
-            self.add_move(board, piece, source_square, attack, move_list);
+            let moves = match move_type {
+                MoveType::All => attack & !friendly_occupancy,
+                MoveType::Quite => attack & occupancy,
+                MoveType::Capture => attack & opponent_occupancy,
+            };
+
+            self.add_move(board, piece, source_square, moves, move_list);
         }
     }
 
-    pub fn generate_pawn_moves(&self, board: &Board, move_list: &mut MoveList) {
+    pub fn generate_pawn_moves(
+        &self,
+        board: &Board,
+        move_list: &mut MoveList,
+        move_type: MoveType,
+    ) {
         // TODO: I don't like that ranks are reversed, fix this later.
         let next_rank = match board.active_color {
             Color::White => -1,
@@ -147,22 +171,26 @@ impl MoveGenerator {
             let next_square = source_square.add_rank(next_rank);
 
             // Generate quite pawn moves
-            let single_push = next_square.get_bitboard() & empty_squares;
-            let double_push = if source_square.rank() == pawns_rank && !single_push.empty() {
-                next_square.get_bitboard().rotate_left(rotations_count) & empty_squares
-            } else {
-                BitBoard::default()
-            };
-            moves |= single_push | double_push;
+            if move_type == MoveType::All || move_type == MoveType::Quite {
+                let single_push = next_square.get_bitboard() & empty_squares;
+                let double_push = if source_square.rank() == pawns_rank && !single_push.empty() {
+                    next_square.get_bitboard().rotate_left(rotations_count) & empty_squares
+                } else {
+                    BitBoard::default()
+                };
+                moves |= single_push | double_push;
+            }
 
             // Generate pawn captures
-            let targets = self.get_pawn_attack(source_square, board.active_color);
-            let attacks = targets & opponent_occupancy;
-            let en_passant_attack = match board.en_passant_target {
-                Some(square) => square.get_bitboard() & targets,
-                None => BitBoard::default(),
-            };
-            moves |= attacks | en_passant_attack;
+            if move_type == MoveType::All || move_type == MoveType::Capture {
+                let targets = self.get_pawn_attack(source_square, board.active_color);
+                let attacks = targets & opponent_occupancy;
+                let en_passant_attack = match board.en_passant_target {
+                    Some(square) => square.get_bitboard() & targets,
+                    None => BitBoard::default(),
+                };
+                moves |= attacks | en_passant_attack;
+            }
 
             // Add move to the move list
             self.add_move(board, piece, source_square, moves, move_list);
@@ -189,8 +217,8 @@ impl MoveGenerator {
                 let is_kingside_blocked = !(white_kingside_blockers & occupancy).empty();
 
                 if !is_kingside_blocked
-                    && !board.is_square_attacked(Square::F1, Color::Black, self)
-                    && !board.is_square_attacked(Square::G1, Color::Black, self)
+                    && !self.is_square_attacked(Square::F1, Color::Black, board)
+                    && !self.is_square_attacked(Square::G1, Color::Black, board)
                 {
                     self.add_move(
                         board,
@@ -206,9 +234,9 @@ impl MoveGenerator {
                 let is_queenside_blocked = !(white_queenside_blockers & occupancy).empty();
 
                 if !is_queenside_blocked
-                    && !board.is_square_attacked(Square::B1, Color::Black, self)
-                    && !board.is_square_attacked(Square::C1, Color::Black, self)
-                    && !board.is_square_attacked(Square::D1, Color::Black, self)
+                    && !self.is_square_attacked(Square::B1, Color::Black, board)
+                    && !self.is_square_attacked(Square::C1, Color::Black, board)
+                    && !self.is_square_attacked(Square::D1, Color::Black, board)
                 {
                     self.add_move(
                         board,
@@ -228,8 +256,8 @@ impl MoveGenerator {
                 let is_kingside_blocked = !(black_kingside_blockers & occupancy).empty();
 
                 if !is_kingside_blocked
-                    && !board.is_square_attacked(Square::F8, Color::White, self)
-                    && !board.is_square_attacked(Square::G8, Color::White, self)
+                    && !self.is_square_attacked(Square::F8, Color::White, board)
+                    && !self.is_square_attacked(Square::G8, Color::White, board)
                 {
                     self.add_move(
                         board,
@@ -245,9 +273,9 @@ impl MoveGenerator {
                 let is_queenside_blocked = !(black_queenside_blockers & occupancy).empty();
 
                 if !is_queenside_blocked
-                    && !board.is_square_attacked(Square::B8, Color::White, self)
-                    && !board.is_square_attacked(Square::C8, Color::White, self)
-                    && !board.is_square_attacked(Square::D8, Color::White, self)
+                    && !self.is_square_attacked(Square::B8, Color::White, board)
+                    && !self.is_square_attacked(Square::C8, Color::White, board)
+                    && !self.is_square_attacked(Square::D8, Color::White, board)
                 {
                     self.add_move(
                         board,
@@ -333,5 +361,52 @@ impl MoveGenerator {
                 move_list.add_move(move_data);
             }
         }
+    }
+
+    // Returns if square is attacked by given color
+    pub fn is_square_attacked(&self, square: Square, color: Color, board: &Board) -> bool {
+        // Is attacked by pawns
+        let pawn_attack = self.get_pawn_attack(square, board.active_color);
+        let pawn_index = Piece::BlackPawn.to_color(color) as usize;
+        if !(pawn_attack & board.bitboards[pawn_index]).empty() {
+            return true;
+        }
+
+        // Is attacked by knight
+        let knight_attack = self.get_knight_attack(square);
+        let knight_index = Piece::BlackKnight.to_color(color) as usize;
+        if !(knight_attack & board.bitboards[knight_index]).empty() {
+            return true;
+        }
+
+        // Is attacked by king
+        let king_attack = self.get_king_attack(square);
+        let king_index = Piece::BlackKing.to_color(color) as usize;
+        if !(king_attack & board.bitboards[king_index]).empty() {
+            return true;
+        }
+
+        // Is attacked by bishop
+        let bishop_attack = self.get_bishop_attack(square, board.get_occupancies(Color::Both));
+        let bishop_index = Piece::BlackBishop.to_color(color) as usize;
+        if !(bishop_attack & board.bitboards[bishop_index]).empty() {
+            return true;
+        }
+
+        // Is attacked by rook
+        let rook_attack = self.get_rook_attack(square, board.get_occupancies(Color::Both));
+        let rook_index = Piece::BlackRook.to_color(color) as usize;
+        if !(rook_attack & board.bitboards[rook_index]).empty() {
+            return true;
+        }
+
+        // Is attacked by rook
+        let queen_attack = self.get_queen_attack(square, board.get_occupancies(Color::Both));
+        let queen_index = Piece::BlackQueen.to_color(color) as usize;
+        if !(queen_attack & board.bitboards[queen_index]).empty() {
+            return true;
+        }
+
+        false
     }
 }

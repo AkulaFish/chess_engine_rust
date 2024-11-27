@@ -2,6 +2,13 @@ use std::fmt::Display;
 
 use crate::board_repr::{piece::Piece, square::Square};
 
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum MoveType {
+    Quite,
+    Capture,
+    All,
+}
+
 #[derive(Clone, Copy)]
 pub struct Move {
     data: u32,
@@ -74,10 +81,6 @@ impl Move {
     pub fn double_push(&self) -> bool {
         self.data & 0x4000000 > 0
     }
-
-    pub fn display(&self) {
-        println!("{}", self)
-    }
 }
 
 impl Default for Move {
@@ -92,17 +95,6 @@ impl Default for Move {
             false,
             false,
         )
-    }
-}
-
-impl Display for Move {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut result = String::from("SOURCE_SQUARE    TARGET_SQUARE   PIECE    CAPTURED_PIECE    PROMOTED_PIECE    EN_PASSANT    CASTLING    DOUBLE_PUSH\n");
-        result.push_str(&format!( "      {}               {}         {}             {}                 {}                {}            {}            {}\n",
-            self.source_square(), self.target_square(), self.piece(), self.captured_piece(), self.promoted_piece(), self.en_passant() as u8, self.castling() as u8, self.double_push() as u8
-        ));
-
-        write!(f, "{}", result)
     }
 }
 

@@ -11,6 +11,12 @@ pub struct MoveList {
     pub count: u8,
 }
 
+impl Default for MoveList {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl MoveList {
     pub fn new() -> Self {
         Self {
@@ -26,25 +32,5 @@ impl MoveList {
 
     pub fn display(&self) {
         println!("{}", self)
-    }
-}
-
-impl Display for MoveList {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut result = String::from("SOURCE_SQUARE    TARGET_SQUARE   PIECE    CAPTURED_PIECE    PROMOTED_PIECE    EN_PASSANT    CASTLING    DOUBLE_PUSH\n");
-        result.push_str("-------------------------------------------------------------------------------------------------------------------\n");
-
-        for m in self.moves {
-            if m.piece() == Piece::None {
-                continue;
-            }
-
-            result.push_str(&format!( "      {}               {}         {}             {}                 {}                {}            {}            {}\n",
-                m.source_square(), m.target_square(), m.piece(), m.captured_piece(), m.promoted_piece(), m.en_passant() as u8, m.castling() as u8, m.double_push() as u8
-            ));
-            result.push_str("-------------------------------------------------------------------------------------------------------------------\n");
-        }
-
-        write!(f, "{}", result)
     }
 }
