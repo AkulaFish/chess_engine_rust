@@ -1,11 +1,14 @@
 use strum_macros::{AsRefStr, Display, EnumIter, EnumString, FromRepr};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Display)]
+#[derive(Default)]
 pub enum Color {
+    #[default]
     White,
     Black,
     Both,
 }
+
 
 impl Color {
     pub fn opposite(&self) -> Self {
@@ -113,5 +116,31 @@ impl Piece {
 
             (_, Color::Both) => *self,
         }
+    }
+}
+
+impl Piece {
+    pub fn is_pawn(&self) -> bool {
+        self == &Piece::WhitePawn || self == &Piece::BlackPawn
+    }
+
+    pub fn is_king(&self) -> bool {
+        self == &Piece::WhiteKing || self == &Piece::BlackKing
+    }
+
+    pub fn is_bishop(&self) -> bool {
+        self == &Piece::WhiteBishop || self == &Piece::BlackBishop
+    }
+
+    pub fn is_rook(&self) -> bool {
+        self == &Piece::WhiteRook || self == &Piece::BlackRook
+    }
+
+    pub fn is_knight(&self) -> bool {
+        self == &Piece::WhiteKnight || self == &Piece::BlackKnight
+    }
+
+    pub fn is_queen(&self) -> bool {
+        self == &Piece::WhiteQueen || self == &Piece::BlackQueen
     }
 }

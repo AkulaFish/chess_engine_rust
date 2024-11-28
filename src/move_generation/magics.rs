@@ -12,6 +12,15 @@ use crate::{
 
 use super::tables::{generate_blockers, get_rook_relevant_occupancy_mask};
 
+pub const ROOK_TABLE_SIZE: usize = 102_400;
+pub const BISHOP_TABLE_SIZE: usize = 5_248;
+
+#[derive(Debug, Display)]
+pub enum MagicPiece {
+    ROOK,
+    BISHOP,
+}
+
 #[derive(Debug, Default, Clone, Copy)]
 pub struct Magic {
     pub magic_number: u64,
@@ -29,15 +38,6 @@ impl Magic {
         ((occ.value().wrapping_mul(self.magic_number) >> self.shift) + self.offset) as usize
     }
 }
-
-#[derive(Debug, Display)]
-pub enum MagicPiece {
-    ROOK,
-    BISHOP,
-}
-
-pub const ROOK_TABLE_SIZE: usize = 102_400;
-pub const BISHOP_TABLE_SIZE: usize = 5_248;
 
 pub fn find_magics(piece: MagicPiece) {
     let mut rng = ChaChaRng::from_entropy();

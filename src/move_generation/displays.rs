@@ -34,18 +34,18 @@ impl DisplayExtension for MoveList {}
 
 impl Display for MoveList {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut result = String::from("SOURCE_SQUARE    TARGET_SQUARE   PIECE    CAPTURED_PIECE    PROMOTED_PIECE    EN_PASSANT    CASTLING    DOUBLE_PUSH\n");
-        result.push_str("-------------------------------------------------------------------------------------------------------------------\n");
+        let mut result = String::from("INDEX    SOURCE_SQUARE    TARGET_SQUARE   PIECE    CAPTURED_PIECE    PROMOTED_PIECE    EN_PASSANT    CASTLING    DOUBLE_PUSH\n");
+        result.push_str("----------------------------------------------------------------------------------------------------------------------------\n");
 
-        for m in self.moves {
+        for (i, m) in self.moves.iter().enumerate() {
             if m.piece() == Piece::None {
                 continue;
             }
 
-            result.push_str(&format!( "      {}               {}         {}             {}                 {}                {}            {}            {}\n",
-                m.source_square(), m.target_square(), m.piece(), m.captured_piece(), m.promoted_piece(), m.en_passant() as u8, m.castling() as u8, m.double_push() as u8
+            result.push_str(&format!( "  {}           {}               {}         {}             {}                 {}                {}            {}            {}\n",
+                i, m.source_square(), m.target_square(), m.piece(), m.captured_piece(), m.promoted_piece(), m.en_passant() as u8, m.castling() as u8, m.double_push() as u8
             ));
-            result.push_str("-------------------------------------------------------------------------------------------------------------------\n");
+            result.push_str("----------------------------------------------------------------------------------------------------------------------------\n");
         }
 
         write!(f, "{}", result)
@@ -54,18 +54,18 @@ impl Display for MoveList {
 
 impl Debug for MoveList {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut result = String::from("SOURCE_SQUARE    TARGET_SQUARE   PIECE    CAPTURED_PIECE    PROMOTED_PIECE    EN_PASSANT    CASTLING    DOUBLE_PUSH\n");
-        result.push_str("-------------------------------------------------------------------------------------------------------------------\n");
+        let mut result = String::from("INDEX    SOURCE_SQUARE    TARGET_SQUARE   PIECE    CAPTURED_PIECE    PROMOTED_PIECE    EN_PASSANT    CASTLING    DOUBLE_PUSH\n");
+        result.push_str("----------------------------------------------------------------------------------------------------------------------------\n");
 
-        for m in self.moves {
+        for (i, m) in self.moves.iter().enumerate() {
             if m.piece() == Piece::None {
                 continue;
             }
 
-            result.push_str(&format!( "      {}               {}         {}             {}                 {}                {}            {}            {}\n",
-                m.source_square(), m.target_square(), m.piece(), m.captured_piece(), m.promoted_piece(), m.en_passant() as u8, m.castling() as u8, m.double_push() as u8
+            result.push_str(&format!( "  {}           {}               {}         {}             {}                 {}                {}            {}            {}\n",
+                i, m.source_square(), m.target_square(), m.piece(), m.captured_piece(), m.promoted_piece(), m.en_passant() as u8, m.castling() as u8, m.double_push() as u8
             ));
-            result.push_str("-------------------------------------------------------------------------------------------------------------------\n");
+            result.push_str("----------------------------------------------------------------------------------------------------------------------------\n");
         }
 
         write!(f, "{}", result)

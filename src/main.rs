@@ -1,3 +1,5 @@
+use std::io::stdin;
+
 use board_repr::fen::Fen;
 use move_generation::{generator::MoveGenerator, move_list::MoveList, moves::MoveType};
 use utils::traits::DisplayExtension;
@@ -14,13 +16,24 @@ const _PROMOTION: &str = "8/P7/8/8/8/8/p7/8 b - - 0 1";
 const _CASTLING: &str = "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1";
 
 fn main() {
-    // TODO: Start making make_move function, I'm gonna deal with reversing move later
-    let board = Fen::to_board(_EN_PASSANT);
-    board.display();
-
+    let mut board = Fen::to_board(_START_FEN);
     let mg = MoveGenerator::new();
-    let mut move_list = MoveList::new();
 
-    mg.generate_moves(&board, &mut move_list, MoveType::Capture);
-    move_list.display();
+    loop {
+        board.display();
+        let mut move_list = MoveList::new();
+        mg.generate_moves(&board, &mut move_list, MoveType::All);
+        move_list.display();
+
+        println!("Please input your move index.");
+        let mut index = String::new();
+        stdin().read_line(&mut index).expect("Failed to read line");
+        let index: usize = match index.trim().parse() {
+            Ok(num) => num,
+            Err(_) => continue,
+        };
+
+        let m = move_list.moves[index];
+        board.make_move(m, &mg);
+    }
 }

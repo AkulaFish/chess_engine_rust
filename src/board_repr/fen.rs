@@ -2,10 +2,7 @@ use crate::board_repr::piece::Piece;
 use std::str::FromStr;
 
 use super::{
-    bit_board::BitBoard,
-    board::{Board, CastleAvailability},
-    piece::Color,
-    square::Square,
+    bit_board::BitBoard, board::Board, game_state::CastleAvailability, piece::Color, square::Square,
 };
 
 pub type BitBoardMap = [BitBoard; 12];

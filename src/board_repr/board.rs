@@ -1,30 +1,51 @@
-use std::fmt::Debug;
-
 use strum::IntoEnumIterator;
 
+use crate::move_generation::moves::Move;
+
 use super::bit_board::BitBoard;
+use super::game_state::{CastleAvailability, GameState};
 use super::piece::{Color, Piece};
 use super::square::Square;
 
-#[derive(Debug, Default)]
-pub struct CastleAvailability {
-    pub can_white_castle_queen: bool,
-    pub can_white_castle_king: bool,
+const MAX_MOVES: usize = 2048;
 
-    pub can_black_castle_queen: bool,
-    pub can_black_castle_king: bool,
+pub struct History {
+    pub history: [GameState; MAX_MOVES],
+    count: usize,
+}
+
+impl Default for History {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl History {
+    pub fn new() -> Self {
+        Self {
+            history: [GameState::default(); MAX_MOVES],
+            count: 0,
+        }
+    }
+
+    pub fn push(&mut self, game_state: GameState) {
+        self.history[self.count] = game_state;
+        self.count += 1;
+    }
+
+    pub fn pop(&mut self) -> GameState {
+        self.count -= 1;
+        self.history[self.count]
+    }
 }
 
 #[derive()]
 pub struct Board {
     pub bitboards: [BitBoard; 12],
-    pub occupancy: [BitBoard; 3],
-    pub active_color: Color,
-    pub castle_settings: CastleAvailability,
-    pub en_passant_target: Option<Square>,
-    pub halfmove_clock: u8,
-    pub fullmove_number: u8,
+    pub occupancy: [BitBoard; 2],
+    pub game_state: GameState,
     pub piece_by_square: [Piece; 64],
+    pub history: History,
 }
 
 impl Board {
@@ -38,23 +59,26 @@ impl Board {
     ) -> Self {
         let piece_by_square = Self::init_piece_by_square(bitboards);
         let occupancy = Self::init_occupancy(bitboards);
-        Self {
-            bitboards,
-            occupancy,
+        let next_move = Move::default();
+        let history = History::new();
+        let game_state = GameState {
             active_color,
             castle_settings,
             en_passant_target,
             halfmove_clock,
             fullmove_number,
+            next_move,
+        };
+        Self {
+            bitboards,
+            occupancy,
+            game_state,
+            history,
             piece_by_square,
         }
     }
 
-    pub fn get_occupancies(&self, color: Color) -> BitBoard {
-        self.occupancy[color as usize]
-    }
-
-    pub fn init_occupancy(bitboards: [BitBoard; 12]) -> [BitBoard; 3] {
+    pub fn init_occupancy(bitboards: [BitBoard; 12]) -> [BitBoard; 2] {
         let mut white_occupancy = BitBoard::default();
         for bb in bitboards.iter().take(6) {
             white_occupancy |= *bb;
@@ -65,11 +89,7 @@ impl Board {
             black_occupancy |= *bb;
         }
 
-        [
-            white_occupancy,
-            black_occupancy,
-            white_occupancy | black_occupancy,
-        ]
+        [white_occupancy, black_occupancy]
     }
 
     pub fn init_piece_by_square(bitboards: [BitBoard; 12]) -> [Piece; 64] {
@@ -88,7 +108,26 @@ impl Board {
         result
     }
 
-    pub fn set_piece(&mut self, square: Square, piece: Piece) {
-        self.bitboards[piece as usize] |= square.get_bitboard();
+    pub fn get_occupancies(&self, color: Color) -> BitBoard {
+        if color == Color::Both {
+            return self.occupancy[Color::White as usize] | self.occupancy[Color::Black as usize];
+        }
+        self.occupancy[color as usize]
+    }
+
+    pub fn active_color(&self) -> Color {
+        self.game_state.active_color
+    }
+
+    pub fn opponent_color(&self) -> Color {
+        self.game_state.active_color.opposite()
+    }
+
+    pub fn castle_settings_mut(&mut self) -> &mut CastleAvailability {
+        &mut self.game_state.castle_settings
+    }
+
+    pub fn castle_settings(&self) -> &CastleAvailability {
+        &self.game_state.castle_settings
     }
 }
