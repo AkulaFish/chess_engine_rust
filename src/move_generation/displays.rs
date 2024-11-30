@@ -57,7 +57,7 @@ impl Debug for MoveList {
         let mut result = String::from("INDEX    SOURCE_SQUARE    TARGET_SQUARE   PIECE    CAPTURED_PIECE    PROMOTED_PIECE    EN_PASSANT    CASTLING    DOUBLE_PUSH\n");
         result.push_str("----------------------------------------------------------------------------------------------------------------------------\n");
 
-        for (i, m) in self.moves.iter().enumerate() {
+        for (i, m) in self.moves.iter().take(self.count as usize).enumerate() {
             if m.piece() == Piece::None {
                 continue;
             }
