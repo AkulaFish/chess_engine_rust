@@ -35,6 +35,14 @@ impl Display for Board {
             result.push('\n')
         }
         result.push_str("    a  b  c  d  e  f  g  h\n\n");
+        result.push_str(&format!("Active side: {}\n", self.active_color()));
+        result.push_str(&format!(
+            "En-passant: {}\n",
+            match self.game_state.en_passant_target {
+                Some(s) => s.to_string(),
+                None => String::from("NaN"),
+            }
+        ));
 
         write!(f, "{}", result)
     }
@@ -63,6 +71,14 @@ impl Debug for Board {
             result.push('\n')
         }
         result.push_str("    a  b  c  d  e  f  g  h\n\n");
+        result.push_str(&format!("Active side: {}\n", self.active_color()));
+        result.push_str(&format!(
+            "En-passant: {}\n",
+            match self.game_state.en_passant_target {
+                Some(s) => s.to_string(),
+                None => String::from("NaN"),
+            }
+        ));
 
         write!(f, "{}", result)
     }

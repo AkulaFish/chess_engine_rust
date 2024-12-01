@@ -1,39 +1,29 @@
-use std::io::stdin;
 
 use board_repr::fen::Fen;
-use move_generation::{generator::MoveGenerator, move_list::MoveList, moves::MoveType};
-use utils::traits::DisplayExtension;
+use move_generation::generator::MoveGenerator;
+use utils::{perft::perft_test, traits::DisplayExtension};
 
 pub mod board_repr;
 pub mod move_generation;
 pub mod utils;
 
 const _START_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-const _FEN_1: &str = "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2";
+const _POSITION_3: &str = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1";
+const _POSITION_4: &str = "r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ - 0 1";
+const _POSITION_5: &str = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/2N5/PPP2nPP/RNBQK2R b KQ - 1 8";
+const _POSITION_6: &str =
+    "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10";
+const _TRICKY_POSITION: &str =
+    "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
 const _EN_PASSANT: &str = "r2qk2r/pp3ppp/2nb1n2/3pp3/1PpPP1b1/P4NP1/2PQBP1P/RNB2RK1 b kq b3 0 9";
 const _EMPTY: &str = "8/8/8/8/8/8/8/8 w - - 0 1";
 const _PROMOTION: &str = "8/P7/8/8/8/8/p7/8 b - - 0 1";
 const _CASTLING: &str = "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1";
 
 fn main() {
-    let mut board = Fen::to_board(_START_FEN);
+    let mut board = Fen::to_board(_POSITION_6);
+    board.display();
     let mg = MoveGenerator::new();
 
-    loop {
-        board.display();
-        let mut move_list = MoveList::new();
-        mg.generate_moves(&board, &mut move_list, MoveType::All);
-        move_list.display();
-
-        println!("Please input your move index.");
-        let mut index = String::new();
-        stdin().read_line(&mut index).expect("Failed to read line");
-        let index: usize = match index.trim().parse() {
-            Ok(num) => num,
-            Err(_) => continue,
-        };
-
-        let m = move_list.moves[index];
-        board.make_move(m, &mg);
-    }
+    perft_test(&mut board, &mg, 5);
 }

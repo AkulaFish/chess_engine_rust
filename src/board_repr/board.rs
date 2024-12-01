@@ -11,7 +11,7 @@ const MAX_MOVES: usize = 2048;
 
 pub struct History {
     pub history: [GameState; MAX_MOVES],
-    count: usize,
+    pub count: usize,
 }
 
 impl Default for History {

@@ -2,6 +2,20 @@ use strum_macros::{Display, EnumIter, EnumString, FromRepr};
 
 use super::bit_board::BitBoard;
 
+const SQUARE_BITBOARDS: [u64; 64] = init_bb_squares();
+
+const fn init_bb_squares() -> [u64; 64] {
+    let mut bb_squares = [0; 64];
+    let mut i = 0;
+
+    while i < 64 {
+        bb_squares[i] = 1u64 << i;
+        i += 1;
+    }
+
+    bb_squares
+}
+
 #[rustfmt::skip]
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter, EnumString, Display, FromRepr)]
@@ -34,11 +48,11 @@ impl Square {
     }
 
     pub fn get_by_index(n: u8) -> Self {
-        Self::from_repr(n).unwrap_or_else(|| panic!("Square index out of range."))
+        Self::from_repr(n).unwrap_or_else(|| panic!("Square index out of range: {n}"))
     }
 
     pub fn get_bitboard(&self) -> BitBoard {
-        BitBoard::from(1u64 << (self.index()))
+        BitBoard::from(SQUARE_BITBOARDS[*self as usize])
     }
 
     pub fn add_rank(&self, increment: i8) -> Self {

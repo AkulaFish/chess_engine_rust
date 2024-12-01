@@ -1,9 +1,9 @@
 use crate::board_repr::{
-        bit_board::BitBoard,
-        board::Board,
-        piece::{Color, Piece},
-        square::Square,
-    };
+    bit_board::BitBoard,
+    board::Board,
+    piece::{Color, Piece},
+    square::Square,
+};
 
 use super::{
     magics::{Magic, BISHOP_TABLE_SIZE, ROOK_TABLE_SIZE},
@@ -198,11 +198,16 @@ impl MoveGenerator {
     }
 
     pub fn generate_castling_moves(&self, board: &Board, move_list: &mut MoveList) {
-        let occupancy = board.get_occupancies(Color::Both);
         let source_square = board.bitboards
             [Piece::WhiteKing.to_color(board.active_color()) as usize]
             .lsb_bit_square();
 
+        // Can not castle under check
+        if self.is_square_attacked(source_square, board.opponent_color(), board) {
+            return;
+        }
+
+        let occupancy = board.get_occupancies(Color::Both);
         let white_kingside_blockers = Square::F1.get_bitboard() | Square::G1.get_bitboard();
         let white_queenside_blockers =
             Square::B1.get_bitboard() | Square::C1.get_bitboard() | Square::D1.get_bitboard();
@@ -233,9 +238,7 @@ impl MoveGenerator {
             // Queenside
             if board.castle_settings().can_white_castle_queen {
                 let is_queenside_blocked = !(white_queenside_blockers & occupancy).empty();
-
                 if !is_queenside_blocked
-                    && !self.is_square_attacked(Square::B1, Color::Black, board)
                     && !self.is_square_attacked(Square::C1, Color::Black, board)
                     && !self.is_square_attacked(Square::D1, Color::Black, board)
                 {
@@ -255,7 +258,6 @@ impl MoveGenerator {
             // Kingside
             if board.castle_settings().can_black_castle_king {
                 let is_kingside_blocked = !(black_kingside_blockers & occupancy).empty();
-
                 if !is_kingside_blocked
                     && !self.is_square_attacked(Square::F8, Color::White, board)
                     && !self.is_square_attacked(Square::G8, Color::White, board)
@@ -272,9 +274,7 @@ impl MoveGenerator {
             // Queenside
             if board.castle_settings().can_black_castle_queen {
                 let is_queenside_blocked = !(black_queenside_blockers & occupancy).empty();
-
                 if !is_queenside_blocked
-                    && !self.is_square_attacked(Square::B8, Color::White, board)
                     && !self.is_square_attacked(Square::C8, Color::White, board)
                     && !self.is_square_attacked(Square::D8, Color::White, board)
                 {
@@ -367,7 +367,7 @@ impl MoveGenerator {
     // Returns if square is attacked by given color
     pub fn is_square_attacked(&self, square: Square, color: Color, board: &Board) -> bool {
         // Is attacked by pawns
-        let pawn_attack = self.get_pawn_attack(square, board.active_color());
+        let pawn_attack = self.get_pawn_attack(square, color.opposite());
         let pawn_index = Piece::BlackPawn.to_color(color) as usize;
         if !(pawn_attack & board.bitboards[pawn_index]).empty() {
             return true;

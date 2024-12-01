@@ -36,6 +36,7 @@ impl Board {
 }
 
 impl Board {
+    #[inline(always)]
     pub fn make_move(&mut self, move_data: Move, mg: &MoveGenerator) -> bool {
         let mut game_state = self.game_state;
         game_state.next_move = move_data;
@@ -120,6 +121,7 @@ impl Board {
         is_legal
     }
 
+    #[inline(always)]
     pub fn unmake_move(&mut self) {
         self.game_state = self.history.pop();
 

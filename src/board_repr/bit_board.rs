@@ -19,6 +19,9 @@ impl BitBoard {
     }
 
     pub fn lsb_bit_square(&self) -> Square {
+        if self.0 == 0 {
+            panic!("Can not get lsb bit from empty board");
+        }
         Square::get_by_index(self.0.trailing_zeros() as u8)
     }
 
