@@ -1,14 +1,12 @@
 use strum_macros::{AsRefStr, Display, EnumIter, EnumString, FromRepr};
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Display)]
-#[derive(Default)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Display, Default)]
 pub enum Color {
     #[default]
     White,
     Black,
     Both,
 }
-
 
 impl Color {
     pub fn opposite(&self) -> Self {
@@ -142,5 +140,9 @@ impl Piece {
 
     pub fn is_queen(&self) -> bool {
         self == &Piece::WhiteQueen || self == &Piece::BlackQueen
+    }
+
+    pub fn is_none(&self) -> bool {
+        self == &Piece::None
     }
 }

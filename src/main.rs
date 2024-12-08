@@ -1,10 +1,8 @@
-
-use board_repr::fen::Fen;
-use move_generation::generator::MoveGenerator;
-use utils::{perft::perft_test, traits::DisplayExtension};
+use uci::uci::UCI;
 
 pub mod board_repr;
 pub mod move_generation;
+pub mod uci;
 pub mod utils;
 
 const _START_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -21,9 +19,5 @@ const _PROMOTION: &str = "8/P7/8/8/8/8/p7/8 b - - 0 1";
 const _CASTLING: &str = "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1";
 
 fn main() {
-    let mut board = Fen::to_board(_POSITION_6);
-    board.display();
-    let mg = MoveGenerator::new();
-
-    perft_test(&mut board, &mg, 5);
+    UCI::uci_loop();
 }

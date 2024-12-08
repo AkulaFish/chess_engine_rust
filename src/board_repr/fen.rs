@@ -77,7 +77,7 @@ impl Fen {
                 1 => match part {
                     "w" => active_color = Color::White,
                     "b" => active_color = Color::Black,
-                    _ => panic!("Undefined color in FEN notation"),
+                    _ => panic!("Undefined color in FEN notation: {part}"),
                 },
                 2 => {
                     for c in part.chars() {

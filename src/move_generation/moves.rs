@@ -81,6 +81,21 @@ impl Move {
     }
 }
 
+impl Move {
+    pub fn to_uci_string(&self) -> String {
+        format!(
+            "{}{}{}",
+            &self.source_square().to_string().to_lowercase(),
+            &self.target_square().to_string().to_lowercase(),
+            if self.promoted_piece().is_none() {
+                String::new()
+            } else {
+                self.promoted_piece().to_string()
+            },
+        )
+    }
+}
+
 impl Default for Move {
     fn default() -> Self {
         Self::encode_move(

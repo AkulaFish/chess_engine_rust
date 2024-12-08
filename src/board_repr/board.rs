@@ -3,41 +3,11 @@ use strum::IntoEnumIterator;
 use crate::move_generation::moves::Move;
 
 use super::bit_board::BitBoard;
+use super::fen::Fen;
 use super::game_state::{CastleAvailability, GameState};
+use super::history::History;
 use super::piece::{Color, Piece};
 use super::square::Square;
-
-const MAX_MOVES: usize = 2048;
-
-pub struct History {
-    pub history: [GameState; MAX_MOVES],
-    pub count: usize,
-}
-
-impl Default for History {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl History {
-    pub fn new() -> Self {
-        Self {
-            history: [GameState::default(); MAX_MOVES],
-            count: 0,
-        }
-    }
-
-    pub fn push(&mut self, game_state: GameState) {
-        self.history[self.count] = game_state;
-        self.count += 1;
-    }
-
-    pub fn pop(&mut self) -> GameState {
-        self.count -= 1;
-        self.history[self.count]
-    }
-}
 
 #[derive()]
 pub struct Board {
@@ -76,6 +46,16 @@ impl Board {
             history,
             piece_by_square,
         }
+    }
+
+    pub fn from_fen(&mut self, fen: &str) {
+        let board = Fen::to_board(fen);
+
+        self.bitboards = board.bitboards;
+        self.occupancy = board.occupancy;
+        self.game_state = board.game_state;
+        self.piece_by_square = board.piece_by_square;
+        self.history = board.history;
     }
 
     pub fn init_occupancy(bitboards: [BitBoard; 12]) -> [BitBoard; 2] {
