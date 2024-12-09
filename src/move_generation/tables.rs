@@ -1,3 +1,10 @@
+/*
+ * This module contains a number of function that are used to pregenerate attacks for each piece type.
+ * These function are not called by the engine during the search, the only purpose of this is to pregenerate
+ * attack bitboards/masks for pieces and later store them on the stack. Storing already computed values gives us huge
+ * boost in performance.
+ */
+
 use crate::board_repr::{bit_board::BitBoard, piece::Color, square::Square};
 use strum::IntoEnumIterator;
 
@@ -76,7 +83,7 @@ pub fn generate_pawn_attack_masks() -> [[BitBoard; 64]; 2] {
     pawn_tables
 }
 
-pub fn get_pawn_attack_mask(color: Color, square: Square) -> BitBoard {
+fn get_pawn_attack_mask(color: Color, square: Square) -> BitBoard {
     let bitboard = square.get_bitboard();
     let mut attack = BitBoard::default();
 
@@ -119,7 +126,7 @@ pub fn generate_knight_attack_masks() -> [BitBoard; 64] {
     knight_tables
 }
 
-pub fn get_knight_attack_mask(square: Square) -> BitBoard {
+fn get_knight_attack_mask(square: Square) -> BitBoard {
     let bitboard = square.get_bitboard();
     let mut attack = BitBoard::default();
 
@@ -160,7 +167,7 @@ pub fn generate_king_attack_masks() -> [BitBoard; 64] {
     king_attacks
 }
 
-pub fn get_king_attack_mask(square: Square) -> BitBoard {
+fn get_king_attack_mask(square: Square) -> BitBoard {
     let bitboard = square.get_bitboard();
     let mut attack = BitBoard::default();
 
@@ -292,7 +299,6 @@ pub fn generate_bishop_attack(square: Square, blocker: BitBoard) -> BitBoard {
 }
 
 pub fn get_bishop_relevant_occupancy_mask(square: Square) -> BitBoard {
-    // TODO: this is pbly rook attacks
     let mut occupancy = BitBoard::default();
     let tr = square.rank();
     let tf = square.file();
@@ -400,7 +406,7 @@ pub fn generate_rook_attacks(square: Square, blockers: &[BitBoard]) -> Vec<BitBo
     attacks
 }
 
-pub fn generate_rook_attack(square: Square, blocker: BitBoard) -> BitBoard {
+fn generate_rook_attack(square: Square, blocker: BitBoard) -> BitBoard {
     let mut occupancy = BitBoard::default();
     let tr = square.rank();
     let tf = square.file();
@@ -445,7 +451,6 @@ pub fn generate_rook_attack(square: Square, blocker: BitBoard) -> BitBoard {
 }
 
 pub fn get_rook_relevant_occupancy_mask(square: Square) -> BitBoard {
-    // TODO: this is pbly rook attacks
     let mut occupancy = BitBoard::default();
     let tr = square.rank();
     let tf = square.file();

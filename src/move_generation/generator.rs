@@ -21,6 +21,11 @@ pub struct MoveGenerator {
     pub bishop_magics: [Magic; 64],
 }
 
+/*
+ * Attack masks generation.
+ * Takes care of getting attack masks (bitboards) for pieces based on the
+ * side playing, piece position and blockers (for slider pieces).
+ */
 impl MoveGenerator {
     pub fn get_bishop_attack(&self, square: Square, blocker: BitBoard) -> BitBoard {
         let magic = self.bishop_magics[square as usize];
@@ -54,6 +59,13 @@ impl MoveGenerator {
     }
 }
 
+/*
+ * Move generation.
+ * Generates PSEUDO LEGAL moves. That means that some of these moves might put your own king in check
+ * and will have to be unmade if we discower that that is the case.
+ *
+ * For more information on unmaking moves look up 'Board.unmake' method.
+ */
 impl MoveGenerator {
     pub fn generate_moves(&self, board: &Board, move_list: &mut MoveList, move_type: MoveType) {
         // Special case. Generate pawn moves
@@ -290,6 +302,7 @@ impl MoveGenerator {
         }
     }
 
+    // Takes 'to_bitboard' of all target squares and generates 'Move' for every target square
     pub fn add_move(
         &self,
         board: &Board,
@@ -299,8 +312,6 @@ impl MoveGenerator {
         move_list: &mut MoveList,
     ) {
         let mut to_bb = to_bitboard;
-        let is_king = piece == Piece::WhiteKing || piece == Piece::BlackKing;
-        let is_pawn = piece == Piece::WhitePawn || piece == Piece::BlackPawn;
         let promotion_rank = match board.active_color() {
             Color::White => 0,
             Color::Black => 7,
@@ -314,9 +325,10 @@ impl MoveGenerator {
                 Some(en_passant_square) => en_passant_square == to_square,
                 None => false,
             };
-            let castling = is_king && ((to_square as i8 - source_square as i8).abs() == 2);
-            let double_push = is_pawn && ((to_square as i8 - source_square as i8).abs() == 16);
-            let is_promotion = is_pawn && to_square.rank() == promotion_rank;
+            let castling = piece.is_king() && ((to_square as i8 - source_square as i8).abs() == 2);
+            let double_push =
+                piece.is_pawn() && ((to_square as i8 - source_square as i8).abs() == 16);
+            let is_promotion = piece.is_pawn() && to_square.rank() == promotion_rank;
             let captured_piece = board.piece_by_square[to_square as usize];
 
             if is_promotion {
@@ -401,7 +413,7 @@ impl MoveGenerator {
             return true;
         }
 
-        // Is attacked by rook
+        // Is attacked by queen
         let queen_attack = self.get_queen_attack(square, board.get_occupancies(Color::Both));
         let queen_index = Piece::BlackQueen.to_color(color) as usize;
         if !(queen_attack & board.bitboards[queen_index]).empty() {
