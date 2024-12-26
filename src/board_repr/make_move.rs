@@ -1,4 +1,7 @@
-use crate::move_generation::{generator::MoveGenerator, moves::Move};
+use crate::{
+    move_generation::{generator::MoveGenerator, moves::Move},
+    utils::traits::DisplayExtension,
+};
 
 use super::{
     board::Board,
@@ -85,6 +88,10 @@ impl Board {
         }
 
         if !piece.is_pawn() {
+            if piece == Piece::None {
+                self.display();
+                move_data.display();
+            }
             self.move_piece(source_square, target_square, piece);
         } else {
             // Handle promotion, double push and en-passant for pawns

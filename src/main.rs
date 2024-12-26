@@ -1,4 +1,3 @@
-use board_repr::piece::Piece;
 use uci::uci::UCI;
 
 pub mod board_repr;
@@ -22,14 +21,5 @@ const _PROMOTION: &str = "8/P7/8/8/8/8/p7/8 b - - 0 1";
 const _CASTLING: &str = "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1";
 
 fn main() {
-    let piece = Piece::BlackBishop;
-    let psqt = match piece {
-        p if p.is_king() => 1,
-        p if p.is_rook() => 2,
-        p if p.is_bishop() => 3,
-        p if p.is_knight() => 4,
-        p if p.is_pawn() => 5,
-        _ => 0,
-    };
-    println!("{psqt}");
+    UCI::uci_loop();
 }

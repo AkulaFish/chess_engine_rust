@@ -3,9 +3,6 @@ use std::{
     str::FromStr,
 };
 
-use rand::{Rng, SeedableRng};
-use rand_chacha::ChaChaRng;
-
 use crate::{
     board_repr::{board::Board, fen::Fen, piece::Piece, square::Square},
     move_generation::{
@@ -13,6 +10,7 @@ use crate::{
         move_list::MoveList,
         moves::{Move, MoveType},
     },
+    search::negamax::Search,
     utils::traits::DisplayExtension,
     _START_FEN,
 };
@@ -157,24 +155,17 @@ impl UCI {
             match part {
                 "go" => (),
                 "depth" => set_depth = true,
-                _ => depth = 6,
+                _ => (),
             }
         }
 
-        // evaluate position here later, for now just choosing random move
-        let mut move_list = MoveList::new();
-        mg.generate_moves(board, &mut move_list, MoveType::All);
-        let mut random = ChaChaRng::from_entropy();
-        let mut is_legal = false;
-        let mut move_data = Move::default();
-
-        while !is_legal {
-            let rnd_index = random.gen_range(0..move_list.count);
-            move_data = move_list.moves[rnd_index as usize];
-
-            is_legal = board.make_move(move_data, mg);
-        }
-        println!("bestmove {}", move_data.to_uci_string())
+        let mut search = Search::new(board, mg);
+        println!("{depth}");
+        search.alpha_beta(-25000, 25000, depth);
+        let move_data = search
+            .best_move
+            .unwrap_or_else(|| panic!("Best move not found"));
+        UCI::bestmove(move_data);
     }
 }
 
@@ -190,5 +181,9 @@ impl UCI {
 
     pub fn uciok() {
         println!("uciok");
+    }
+
+    pub fn bestmove(move_data: Move) {
+        println!("bestmove {}", move_data.to_uci_string())
     }
 }

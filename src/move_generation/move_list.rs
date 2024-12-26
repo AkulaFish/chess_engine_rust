@@ -1,3 +1,5 @@
+use crate::board_repr::piece::Piece;
+
 use super::moves::Move;
 
 const MAX_LEGAL_MOVES: usize = 255;
@@ -28,5 +30,35 @@ impl MoveList {
 
     pub fn display(&self) {
         println!("{}", self)
+    }
+}
+
+impl IntoIterator for MoveList {
+    type Item = Move;
+    type IntoIter = MoveListIterator;
+
+    fn into_iter(self) -> Self::IntoIter {
+        Self::IntoIter {
+            move_list: self,
+            index: 0,
+        }
+    }
+}
+
+pub struct MoveListIterator {
+    move_list: MoveList,
+    index: usize,
+}
+
+impl Iterator for MoveListIterator {
+    type Item = Move;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let result = self.move_list.moves[self.index];
+        self.index += 1;
+        if result.piece() == Piece::None {
+            return None;
+        }
+        Some(result)
     }
 }

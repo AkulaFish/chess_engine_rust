@@ -101,5 +101,9 @@ pub fn evaluate(board: &Board) -> i16 {
         score += psqt[square_index];
     }
 
-    score
+    if board.active_color() == Color::White {
+        score
+    } else {
+        -score
+    }
 }

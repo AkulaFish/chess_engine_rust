@@ -149,7 +149,7 @@ impl Piece {
 
 impl Piece {
     pub fn eval_value(&self) -> i16 {
-        return match self {
+        match self {
             Self::WhitePawn => 100,
             Self::WhiteKnight => 300,
             Self::WhiteBishop => 350,
@@ -165,6 +165,6 @@ impl Piece {
             Self::BlackKing => -10000,
 
             _ => 0,
-        };
+        }
     }
 }

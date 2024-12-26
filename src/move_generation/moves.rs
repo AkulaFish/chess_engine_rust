@@ -7,7 +7,7 @@ pub enum MoveType {
     All,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub struct Move {
     data: u32,
 }
