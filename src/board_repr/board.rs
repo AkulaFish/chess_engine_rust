@@ -1,5 +1,6 @@
 use strum::IntoEnumIterator;
 
+use crate::move_generation::generator::MoveGenerator;
 use crate::move_generation::moves::Move;
 
 use super::bit_board::BitBoard;
@@ -86,6 +87,12 @@ impl Board {
         }
 
         result
+    }
+
+    pub fn is_king_in_check(&self, mg: &MoveGenerator) -> bool {
+        let king_square = self.bitboards[Piece::WhiteKing.to_color(self.active_color()) as usize]
+            .lsb_bit_square();
+        mg.is_square_attacked(king_square, self.opponent_color(), self)
     }
 
     pub fn get_occupancies(&self, color: Color) -> BitBoard {

@@ -110,7 +110,7 @@ impl Fen {
                         .expect("Fullmove number must be positive integer");
                     fullmove_number = number;
                 }
-                _ => panic!("Unknown FEN configuration parameter"),
+                _ => panic!("Unknown FEN configuration parameter. FEN: {fen}. Parameter: {part}"),
             }
         }
 

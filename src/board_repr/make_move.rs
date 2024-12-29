@@ -127,16 +127,14 @@ impl Board {
             }
         }
 
-        self.game_state.active_color = self.opponent_color();
+        // If king is under attack after we made this move - move is not legal - unmake move
+        let is_legal = !self.is_king_in_check(mg);
 
+        self.game_state.active_color = self.opponent_color();
         if self.active_color() == Color::Black {
             self.game_state.fullmove_number += 1;
         }
 
-        // If king is under attack after we made this move - move is not legal - unmake move
-        let king_square = self.bitboards[Piece::WhiteKing.to_color(self.opponent_color()) as usize]
-            .lsb_bit_square();
-        let is_legal = !mg.is_square_attacked(king_square, self.active_color(), self);
         if !is_legal {
             self.unmake_move();
         }

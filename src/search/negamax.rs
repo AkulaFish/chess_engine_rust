@@ -1,6 +1,5 @@
 use crate::{
     board_repr::board::Board,
-    evaluation::eval::evaluate,
     move_generation::{
         generator::MoveGenerator,
         move_list::MoveList,
@@ -9,11 +8,11 @@ use crate::{
 };
 
 pub struct Search<'a> {
-    board: &'a mut Board,
-    mg: &'a MoveGenerator,
+    pub board: &'a mut Board,
+    pub mg: &'a MoveGenerator,
 
-    nodes: u32,
-    ply: u32,
+    pub nodes: u32,
+    pub ply: u32,
     pub best_move: Option<Move>,
 }
 
@@ -37,12 +36,14 @@ impl<'a> Search<'a> {
     pub fn alpha_beta(&mut self, mut alpha: i16, beta: i16, depth: i8) -> i16 {
         // base condition
         if depth == 0 {
-            return evaluate(self.board);
+            return self.quiescence(alpha, beta);
         }
 
         // init variables
         let mut best_move_so_far: Move = Move::default();
+        let mut legal_moves_count = 0;
         let init_alpha = alpha;
+        let is_king_in_check = self.board.is_king_in_check(self.mg);
 
         // update number of nodes traversed
         self.nodes += 1;
@@ -58,7 +59,9 @@ impl<'a> Search<'a> {
                 continue;
             }
 
+            // increment counters
             self.ply += 1;
+            legal_moves_count += 1;
 
             let score = -self.alpha_beta(-beta, -alpha, depth - 1);
 
@@ -79,6 +82,18 @@ impl<'a> Search<'a> {
                     best_move_so_far = move_data;
                 }
             }
+        }
+
+        if legal_moves_count == 0 {
+            // Mate
+            if is_king_in_check {
+                // We need to add ply here to ensure that mate with fewer number of moves
+                // going to have higher score.
+                return -30000i16 + self.ply as i16;
+            }
+
+            // Stalemate
+            return 0;
         }
 
         if init_alpha != alpha {

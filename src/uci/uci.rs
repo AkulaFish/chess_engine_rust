@@ -104,26 +104,31 @@ impl UCI {
         let mut parse_fen = false;
 
         for part in parts {
+            match part {
+                "position" => continue,
+                "startpos" => {
+                    fen = _START_FEN.to_string();
+                    continue;
+                }
+                "fen" => {
+                    parse_fen = true;
+                    parse_moves = false;
+                    continue;
+                }
+                "moves" => {
+                    parse_fen = false;
+                    parse_moves = true;
+                    continue;
+                }
+                _ => (),
+            }
+
             if parse_moves {
                 moves.push(part.trim());
             }
 
             if parse_fen {
                 fen.push_str(&format!("{} ", part));
-            }
-
-            match part {
-                "position" => (),
-                "startpos" => fen = _START_FEN.to_string(),
-                "fen" => {
-                    parse_fen = true;
-                    parse_moves = false
-                }
-                "moves" => {
-                    parse_fen = false;
-                    parse_moves = true;
-                }
-                _ => (),
             }
         }
 
@@ -134,7 +139,6 @@ impl UCI {
 
             if let Some(m) = move_data {
                 board.make_move(m, mg);
-                println!("Making move {}", m.to_uci_string());
             }
         }
 
@@ -152,7 +156,7 @@ impl UCI {
                 depth = part.parse().unwrap_or(6);
             }
 
-            match part {
+            match part.to_lowercase().as_str() {
                 "go" => (),
                 "depth" => set_depth = true,
                 _ => (),
@@ -160,18 +164,16 @@ impl UCI {
         }
 
         let mut search = Search::new(board, mg);
-        println!("{depth}");
-        search.alpha_beta(-25000, 25000, depth);
-        let move_data = search
-            .best_move
-            .unwrap_or_else(|| panic!("Best move not found"));
-        UCI::bestmove(move_data);
+        search.alpha_beta(-32000, 32000, depth);
+        if let Some(move_data) = search.best_move {
+            UCI::bestmove(move_data)
+        }
     }
 }
 
 impl UCI {
     pub fn id() {
-        println!("id name ChessDiploma");
+        println!("id name ChessDiplomaEngine");
         println!("id author AkulaFish");
     }
 
