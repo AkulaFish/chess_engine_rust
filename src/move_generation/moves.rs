@@ -87,11 +87,7 @@ impl Move {
             "{}{}{}",
             &self.source_square().to_string().to_lowercase(),
             &self.target_square().to_string().to_lowercase(),
-            if self.promoted_piece().is_none() {
-                String::new()
-            } else {
-                self.promoted_piece().to_string()
-            },
+            self.promoted_piece().to_fen_string(),
         )
     }
 }

@@ -68,6 +68,26 @@ impl Piece {
         Color::White
     }
 
+    pub fn to_fen_string(&self) -> String {
+        match self {
+            Self::WhitePawn => String::from("P"),
+            Self::WhiteQueen => String::from("Q"),
+            Self::WhiteKing => String::from("K"),
+            Self::WhiteBishop => String::from("B"),
+            Self::WhiteKnight => String::from("N"),
+            Self::WhiteRook => String::from("R"),
+
+            Self::BlackPawn => String::from("p"),
+            Self::BlackQueen => String::from("q"),
+            Self::BlackKing => String::from("k"),
+            Self::BlackBishop => String::from("b"),
+            Self::BlackKnight => String::from("k"),
+            Self::BlackRook => String::from("r"),
+
+            Self::None => String::new(),
+        }
+    }
+
     pub fn opposite_color(&self) -> Self {
         match self {
             Self::WhitePawn => Self::BlackPawn,
@@ -84,7 +104,7 @@ impl Piece {
             Self::BlackKnight => Self::WhiteKnight,
             Self::BlackRook => Self::WhiteRook,
 
-            Self::None => panic!("Can not get color of None piece."),
+            Self::None => *self,
         }
     }
 

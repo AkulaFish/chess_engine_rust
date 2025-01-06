@@ -43,7 +43,7 @@ impl UCI {
 
             if command == "uci" {
                 UCI::id();
-                UCI::readyok();
+                UCI::uciok();
             }
 
             if command == "ucinewgame" {
@@ -83,15 +83,14 @@ impl UCI {
         };
         let promoted_piece = Piece::from_str(promoted).unwrap_or(Piece::None);
 
-        println!("source square: {source_square}, target: {target_square}, promoted: {promoted}");
-
         let mut move_list = MoveList::new();
         mg.generate_moves(board, &mut move_list, MoveType::All);
 
         move_list.moves.into_iter().find(|x| {
             x.source_square() == source_square
                 && x.target_square() == target_square
-                && x.promoted_piece() == promoted_piece
+                && (x.promoted_piece() == promoted_piece
+                    || x.promoted_piece() == promoted_piece.opposite_color())
         })
     }
 
@@ -141,8 +140,6 @@ impl UCI {
                 board.make_move(m, mg);
             }
         }
-
-        board.display();
     }
 
     pub fn parse_go(command: &str, board: &mut Board, mg: &MoveGenerator) {
@@ -166,7 +163,8 @@ impl UCI {
         let mut search = Search::new(board, mg);
         search.alpha_beta(-32000, 32000, depth);
         if let Some(move_data) = search.best_move {
-            UCI::bestmove(move_data)
+            UCI::info(move_data, depth);
+            UCI::bestmove(move_data);
         }
     }
 }
@@ -187,5 +185,9 @@ impl UCI {
 
     pub fn bestmove(move_data: Move) {
         println!("bestmove {}", move_data.to_uci_string())
+    }
+
+    pub fn info(move_data: Move, depth: i8) {
+        println!("info depth {depth} pv {}", move_data.to_uci_string());
     }
 }

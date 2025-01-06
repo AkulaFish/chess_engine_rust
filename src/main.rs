@@ -1,10 +1,10 @@
-use uci::uci::UCI;
+use comm::uci::UCI;
 
 pub mod board_repr;
+pub mod comm;
 pub mod evaluation;
 pub mod move_generation;
 pub mod search;
-pub mod uci;
 pub mod utils;
 
 const _START_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
