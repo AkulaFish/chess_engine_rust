@@ -21,5 +21,6 @@ const _PROMOTION: &str = "8/P7/8/8/8/8/p7/8 b - - 0 1";
 const _CASTLING: &str = "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1";
 
 fn main() {
+    // Run UCI communication interface
     UCI::uci_loop();
 }
